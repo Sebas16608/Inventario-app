@@ -18,3 +18,6 @@ class Category(models.Model):
     #         name="unique_category_slug_per_company"
     #     )
     # ]
+
+    def __str__(self):
+        return self.name
