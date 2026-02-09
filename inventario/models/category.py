@@ -1,10 +1,11 @@
 from django.db import models
+from accounts.models import Company
 
 class Category(models.Model):
     name = models.CharField(max_length=255)
     description = models.TextField(null=True, blank=True)
     slug = models.SlugField()
-    # empresa = models.ForeingKey(Empresa, on_delete=models.CASCADE, related_name="category") Esto con commit porque aun no tengo nada de cuentas, usuarios ni empresas
+    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name="category")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -12,12 +13,12 @@ class Category(models.Model):
         ordering = ["id"]
         verbose_name = "Category"
         verbose_name_plural = "Categories"
-    #     constraints = [
-    #     models.UniqueConstraint(
-    #         fields=["empresa", "slug"],
-    #         name="unique_category_slug_per_company"
-    #     )
-    # ]
+        constraints = [
+        models.UniqueConstraint(
+            fields=["company", "slug"],
+            name="unique_category_slug_per_company"
+        )
+    ]
 
     def __str__(self):
         return self.name
