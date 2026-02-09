@@ -16,6 +16,13 @@ class Product(models.Model):
         ordering = ["id"]
         verbose_name = "Product"
         verbose_name_plural = "Products"
+        constraints = [
+        models.UniqueConstraint(
+        fields=["company", "slug"],
+        name="unique_product_slug_per_company"
+        )
+    ]
+
 
     def __str__(self):
         return f"Producto {self.name} de {self.category.name}"
