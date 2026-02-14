@@ -1,26 +1,24 @@
 from django.urls import path
-
-from accounts.views.register_view import RegisterAPIView
-from accounts.views.login_view import LoginAPIView
-
-from accounts.views.user_view import UserAPIView
-from accounts.views.company_view import CompanyAPIView
-from accounts.views.profile_view import ProfileAPIView
+from accounts.views.company_view import CompanyView
+from accounts.views.login_view import loginView
+from accounts.views.register_view import RegisterView
+from accounts.views.profile_view import ProfileView
+from accounts.views.user_view import UserView
 
 urlpatterns = [
-
-    # Auth
-    path("register/", RegisterAPIView.as_view(), name="register"),
-    path("login/", LoginAPIView.as_view(), name="login"),
-
-    # Users
-    path("users/me/", UserAPIView.as_view(), name="user-me"),
-
-    # Company
-    path("companies/", CompanyAPIView.as_view(), name="company-list-create"),
-    path("companies/<int:pk>/", CompanyAPIView.as_view(), name="company-detail"),
-
-    # Profile
-    path("profile/", ProfileAPIView.as_view(), name="profile-me"),
-
+    # Auth endpoints
+    path('login/', loginView.as_view(), name='login'),
+    path('register/', RegisterView.as_view(), name='register'),
+    
+    # User endpoints
+    path('users/', UserView.as_view(), name='user-list'),
+    path('users/<int:pk>/', UserView.as_view(), name='user-detail'),
+    
+    # Profile endpoints
+    path('profiles/', ProfileView.as_view(), name='profile-list'),
+    path('profiles/<int:pk>/', ProfileView.as_view(), name='profile-detail'),
+    
+    # Company endpoints
+    path('companies/', CompanyView.as_view(), name='company-list'),
+    path('companies/<int:pk>/', CompanyView.as_view(), name='company-detail'),
 ]
