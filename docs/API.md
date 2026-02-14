@@ -1,52 +1,304 @@
 # Documentación de API - Inventario App
 
-## 🔌 Base URL
+## 🔌 Base URLs
 
 ```
-http://localhost:8000/api
+Autenticación y Usuarios: http://localhost:8000/auth/
+Productos e Inventario:    http://localhost:8000/api/
 ```
 
 ## 🔐 Autenticación
 
 La API utiliza **JWT (JSON Web Tokens)** para autenticación.
 
-### Obtener Token
+### Registro de Usuario
 
-```bash
-POST /api/token/
+```http
+POST /auth/register/
 Content-Type: application/json
+```
 
+**Body Requerido:**
+```json
 {
-  "username": "usuario",
-  "password": "contraseña"
+  "username": "sebastian",
+  "email": "sebastian@example.com",
+  "password": "contraseña123",
+  "company": 1
 }
 ```
 
-**Respuesta:**
+**Respuesta (201 Created):**
 ```json
 {
+  "id": 1,
+  "username": "sebastian",
+  "email": "sebastian@example.com"
+}
+```
+
+---
+
+### Login (Obtener Token)
+
+```http
+POST /auth/login/
+Content-Type: application/json
+```
+
+**Body Requerido:**
+```json
+{
+  "username": "sebastian",
+  "password": "contraseña123"
+}
+```
+
+**Respuesta (201 Created):**
+```json
+{
+  "refresh": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...",
   "access": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...",
-  "refresh": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
+  "username": "sebastian",
+  "email": "sebastian@example.com"
 }
 ```
 
 ### Usar Token en Requests
 
-Incluir token en header `Authorization`:
+Incluir el token `access` en el header `Authorization`:
 
 ```bash
 Authorization: Bearer <access_token>
 ```
 
-### Renovar Token
-
+**Ejemplo:**
 ```bash
-POST /api/token/refresh/
-Content-Type: application/json
+curl -X GET http://localhost:8000/auth/users/ \
+  -H "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
+```
 
+---
+
+## 👤 Endpoints de Usuarios
+
+### Listar Usuarios
+
+```http
+GET /auth/users/
+```
+
+**Query Parameters:**
+- `id` (integer) - Filtrar por ID
+- `username` (string) - Filtrar por nombre de usuario
+- `email` (string) - Filtrar por email
+
+**Respuesta (200 OK):**
+```json
+[
+  {
+    "id": 1,
+    "username": "sebastian",
+    "email": "sebastian@example.com"
+  }
+]
+```
+
+---
+
+### Obtener Usuario por ID
+
+```http
+GET /auth/users/{id}/
+```
+
+**Respuesta (200 OK):**
+```json
 {
-  "refresh": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
+  "id": 1,
+  "username": "sebastian",
+  "email": "sebastian@example.com"
 }
+```
+
+---
+
+### Actualizar Usuario (PUT)
+
+```http
+PUT /auth/users/{id}/
+Content-Type: application/json
+```
+
+**Body:**
+```json
+{
+  "username": "sebastian_updated",
+  "email": "sebastian_new@example.com"
+}
+```
+
+---
+
+### Actualizar Usuario Parcialmente (PATCH)
+
+```http
+PATCH /auth/users/{id}/
+Content-Type: application/json
+```
+
+**Body (opcional):**
+```json
+{
+  "email": "sebastian_new@example.com"
+}
+```
+
+---
+
+### Eliminar Usuario
+
+```http
+DELETE /auth/users/{id}/
+```
+
+**Respuesta:** 204 No Content
+
+---
+
+## 👥 Endpoints de Perfiles
+
+### Listar Perfiles
+
+```http
+GET /auth/profiles/
+```
+
+**Query Parameters:**
+- `id` (integer) - Filtrar por ID
+- `user` (integer) - Filtrar por usuario
+- `company` (integer) - Filtrar por empresa
+- `role` (string) - Filtrar por rol (ADMIN, SELLER, WAREHOUSE)
+
+**Respuesta (200 OK):**
+```json
+[
+  {
+    "id": 1,
+    "user": 1,
+    "company": 1,
+    "role": "ADMIN"
+  }
+]
+```
+
+---
+
+### Obtener Perfil por ID
+
+```http
+GET /auth/profiles/{id}/
+```
+
+---
+
+### Crear Perfil
+
+```http
+POST /auth/profiles/
+Content-Type: application/json
+```
+
+**Body:**
+```json
+{
+  "user": 1,
+  "company": 1,
+  "role": "SELLER"
+}
+```
+
+---
+
+### Actualizar Perfil (PUT/PATCH)
+
+```http
+PUT /auth/profiles/{id}/
+PATCH /auth/profiles/{id}/
+```
+
+---
+
+### Eliminar Perfil
+
+```http
+DELETE /auth/profiles/{id}/
+```
+
+---
+
+## 🏢 Endpoints de Empresas
+
+### Listar Empresas
+
+```http
+GET /auth/companies/
+```
+
+**Query Parameters:**
+- `name` (string) - Filtrar por nombre
+- `created_at` (string) - Filtrar por fecha de creación
+
+**Respuesta (200 OK):**
+```json
+[
+  {
+    "id": 1,
+    "name": "Mi Empresa",
+    "created_at": "2024-01-15T10:30:00Z"
+  }
+]
+```
+
+---
+
+### Obtener Empresa por ID
+
+```http
+GET /auth/companies/{id}/
+```
+
+---
+
+### Crear Empresa
+
+```http
+POST /auth/companies/
+Content-Type: application/json
+```
+
+**Body:**
+```json
+{
+  "name": "Mi Empresa"
+}
+```
+
+---
+
+### Actualizar Empresa (PUT/PATCH)
+
+```http
+PUT /auth/companies/{id}/
+PATCH /auth/companies/{id}/
+```
+
+---
+
+### Eliminar Empresa
+
+```http
+DELETE /auth/companies/{id}/
 ```
 
 ---

@@ -52,13 +52,28 @@ Inventario App está construida usando una arquitectura en capas con Django REST
 
 ```
 accounts/
-├── models.py           # Company, Profile, User (Django built-in)
-├── views.py            # Vistas de autenticación
-├── admin.py            # Configuración admin
-├── apps.py             # Configuración de app
-├── tests.py            # Tests unitarios
+├── models.py                       # Company, Profile, User (Django built-in)
+├── urls.py                         # Rutas de autenticación y usuarios
+├── admin.py                        # Configuración admin
+├── apps.py                         # Configuración de app
+├── tests.py                        # Tests unitarios
+├── views/
+│   ├── __init__.py
+│   ├── login_view.py              # Vista de login
+│   ├── register_view.py           # Vista de registro
+│   ├── user_view.py               # Vista CRUD de usuarios
+│   ├── profile_view.py            # Vista CRUD de perfiles
+│   └── company_view.py            # Vista CRUD de empresas
+├── serializers/
+│   ├── __init__.py
+│   ├── login_serializer.py
+│   ├── register_serializer.py
+│   ├── user_serializer.py
+│   ├── profile_serializer.py
+│   └── company_serializer.py
 ├── services/
-│   └── user-service.py # Lógica de usuarios
+│   ├── __init__.py
+│   └── user_service.py            # Lógica de usuarios
 ├── migrations/
 └── __init__.py
 ```

@@ -10,7 +10,7 @@ Inventario App es un sistema en desarrollo continuo. Este documento describe las
 
 ### v1.0.0 (Actual - MVP)
 
-**Estado**: ✅ En Desarrollo
+**Estado**: ✅ En Desarrollo (70% completado)
 
 **Características Completadas:**
 - [x] Gestión de productos y categorías
@@ -19,7 +19,15 @@ Inventario App es un sistema en desarrollo continuo. Este documento describe las
 - [x] Sistema multi-empresa
 - [x] Autenticación JWT
 - [x] Roles de usuario (ADMIN, SELLER, WAREHOUSE)
-- [x] API REST completa (CRUD)
+- [x] API REST completa (CRUD) para usuarios, perfiles y empresas
+- [x] Views y URLs para accounts completas
+- [x] Serializers para todas las entidades
+
+**Características en Progreso:**
+- [ ] Endpoints CRUD de inventario completamente funcionales
+- [ ] Tests unitarios e integración
+- [ ] Validaciones y manejo de errores mejorados
+- [ ] Documentación de deployement
 
 ---
 
