@@ -37,7 +37,12 @@ class BaseCompanyAPIView(APIView):
             
         Raises:
             ValueError: If user has no profile or company
+            PermissionError: If user is not authenticated
         """
+        # Verify user is authenticated
+        if not self.request.user.is_authenticated:
+            raise PermissionError("User must be authenticated")
+        
         try:
             return self.request.user.profile.company
         except AttributeError:

@@ -88,8 +88,18 @@ REST_FRAMEWORK = {
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
+import sys
+
+# Use SQLite for testing
+if 'test' in sys.argv:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'test_db.sqlite3',
+        }
+    }
 # Check if DATABASE_URL is provided (external database)
-if os.getenv('DATABASE_URL'):
+elif os.getenv('DATABASE_URL'):
     DATABASES = {
         'default': dj_database_url.config(
             default=os.getenv('DATABASE_URL'),
@@ -109,6 +119,7 @@ else:
             'PASSWORD': os.getenv('DB_PASSWORD', 'inventario_password')
         }
     }
+
 
 
 # Password validation
