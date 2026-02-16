@@ -18,6 +18,8 @@ Inventario App es una plataforma SaaS para la gestión integral de inventarios q
 
 ## 🚀 Quick Start
 
+### Opción 1: Desarrollo Local (sin Docker)
+
 ```bash
 # Clonar repositorio
 git clone https://github.com/Sebas16608/Inventario-app.git
@@ -41,7 +43,30 @@ python manage.py migrate
 python manage.py runserver
 ```
 
-Para instrucciones detalladas, ver [docs/INSTALACION.md](docs/INSTALACION.md).
+### Opción 2: Docker (Recomendado para Producción)
+
+```bash
+# Clonar repositorio
+git clone https://github.com/Sebas16608/Inventario-app.git
+cd Inventario-app
+
+# Copiar configuración de producción
+cp .env.production .env
+
+# Editar variables (SECRET_KEY, ALLOWED_HOSTS, etc)
+nano .env
+
+# Construir y ejecutar
+docker-compose build
+docker-compose up -d
+
+# Ejecutar migraciones
+docker-compose exec web python manage.py migrate
+```
+
+Para instrucciones detalladas, ver:
+- 📖 [docs/INSTALACION.md](docs/INSTALACION.md) - Setup local
+- 🐳 [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) - Deploy con Docker
 
 ## 📚 Documentación
 
@@ -49,7 +74,8 @@ Toda la documentación está en la carpeta [docs/](docs/):
 
 | Documento | Descripción |
 |-----------|-------------|
-| [docs/INSTALACION.md](docs/INSTALACION.md) | Guía de instalación y configuración |
+| [docs/INSTALACION.md](docs/INSTALACION.md) | Guía de instalación y configuración local |
+| [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) | **Guía de Deploy con Docker y Neon Database** |
 | [docs/ARQUITECTURA.md](docs/ARQUITECTURA.md) | Descripción de la arquitectura del sistema |
 | [docs/MODELOS.md](docs/MODELOS.md) | Definición de modelos de datos y relaciones |
 | [docs/API.md](docs/API.md) | Documentación completa de endpoints de API |
@@ -73,11 +99,26 @@ Ver [docs/API.md](docs/API.md) para documentación completa.
 
 ## 🛠️ Tecnologías
 
+### Backend
 - **Django 6.0.2** - Framework web principal
 - **Django REST Framework 3.16.1** - Marco para APIs REST
 - **Django REST Simple JWT 5.5.1** - Autenticación JWT
-- **PostgreSQL** - Base de datos
+- **Django CORS Headers 4.3.1** - Configuración CORS
+
+### Base de Datos
+- **PostgreSQL 15** - Base de datos principal
+- **Neon Database** - Hosting de PostgreSQL en la nube
+
+### Deployment & DevOps
+- **Docker** - Containerización
+- **Docker Compose** - Orquestación de servicios
+- **Gunicorn 21.2.0** - WSGI HTTP Server
+- **Nginx** - Reverse Proxy y servidor estático
+
+### Languages & Tools
 - **Python 3.10+** - Lenguaje de programación
+- **dj-database-url** - Parsing de DATABASE_URL
+- **psycopg2-binary** - Driver PostgreSQL
 
 ## 🤝 Contribuciones
 
