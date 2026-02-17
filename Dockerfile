@@ -3,11 +3,6 @@ FROM python:3.11-slim as builder
 
 WORKDIR /app
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    postgresql-client \
-    && rm -rf /var/lib/apt/lists/*
-
 # Copy requirements and install Python dependencies
 COPY requirements.txt .
 RUN pip install --user --no-cache-dir -r requirements.txt
@@ -19,7 +14,7 @@ WORKDIR /app
 
 # Install runtime system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    postgresql-client \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy Python dependencies from builder
@@ -36,16 +31,13 @@ COPY . .
 # Create directories for logs and static files
 RUN mkdir -p /app/logs /app/staticfiles /app/media
 
-# Create entrypoint script
+# Copy entrypoint script
 COPY entrypoint.sh /app/
 RUN chmod +x /app/entrypoint.sh
 
 # Expose port
 EXPOSE 8000
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
-    CMD python -c "import requests; requests.get('http://localhost:8000/admin', timeout=5)"
-
-# Run entrypoint
-ENTRYPOINT ["/app/entrypoint.sh"]
+# Health check - verifies the app is running
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD curl -f http://localhost:8000/admin/ || exit 1
