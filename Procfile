@@ -1,2 +1,2 @@
-web: cd backend && gunicorn core.wsgi:application --bind 0.0.0.0:$PORT --workers 3 --worker-class sync --max-requests 1000 --max-requests-jitter 50 --timeout 60 --access-logfile - --error-logfile - --log-level info
-release: cd backend && python manage.py migrate --noinput && python manage.py collectstatic --noinput --clear && echo "✅ Migraciones completadas"
+web: cd backend && gunicorn core.wsgi:application --bind 0.0.0.0:$PORT --workers 3 --threads 2 --worker-class gthread --worker-tmp-dir /dev/shm --timeout 60 --max-requests 1000 --max-requests-jitter 50 --access-logfile - --error-logfile - --log-level info
+release: cd backend && python manage.py migrate --noinput && python manage.py collectstatic --noinput --clear && echo "✅ Migraciones y statics completados"

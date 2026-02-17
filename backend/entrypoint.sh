@@ -36,6 +36,17 @@ python manage.py migrate --noinput
 echo -e "${GREEN}📁 Collecting static files...${NC}"
 python manage.py collectstatic --noinput --clear
 
+# Verificar que los statics de DRF estén presentes
+if [ -d "staticfiles/rest_framework" ]; then
+    echo -e "${GREEN}✅ REST Framework statics found${NC}"
+else
+    echo -e "${YELLOW}⚠️  WARNING: REST Framework statics not found${NC}"
+fi
+
+if [ -f "staticfiles/rest_framework/css/bootstrap.min.css" ]; then
+    echo -e "${GREEN}✅ Bootstrap CSS found${NC}"
+fi
+
 # Crear superusuario en desarrollo (solo si DEBUG=True)
 if [ "$DEBUG" = "True" ]; then
     echo -e "${YELLOW}👤 Creating development superuser...${NC}"

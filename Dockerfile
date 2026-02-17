@@ -1,7 +1,7 @@
 FROM python:3.13-slim
 
 # Metadatos
-LABEL maintainer="Sebastián <sebastián@example.com>"
+LABEL maintainer="Sebastián <asebasrr444@gmail.com>"
 LABEL description="Inventario-app - Django REST Framework API"
 LABEL version="1.0"
 
@@ -36,8 +36,9 @@ RUN pip install --upgrade pip setuptools wheel && \
 # Copiar el proyecto completo
 COPY . .
 
-# Crear directorios necesarios
-RUN mkdir -p /app/backend/logs /app/backend/media /app/backend/staticfiles
+# Crear directorios necesarios con permisos adecuados
+RUN mkdir -p /app/backend/logs /app/backend/media /app/backend/staticfiles && \
+    chmod 755 /app/backend/logs /app/backend/media /app/backend/staticfiles
 
 # Dar permisos al entrypoint
 RUN chmod +x /app/backend/entrypoint.sh
