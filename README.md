@@ -74,10 +74,13 @@ Toda la documentación está en la carpeta [docs/](docs/):
 
 | Documento | Descripción |
 |-----------|-------------|
+| [docs/API.md](docs/API.md) | **API Endpoints y ejemplos de uso** |
+| [docs/JWT_AUTH.md](docs/JWT_AUTH.md) | **Guía completa de autenticación JWT** |
 | [docs/INSTALACION.md](docs/INSTALACION.md) | Guía de instalación y configuración local |
-| [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) | **Guía de Deploy con Docker y Neon Database** |
+| [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) | Guía de Deploy con Docker y Neon Database |
 | [docs/ARQUITECTURA.md](docs/ARQUITECTURA.md) | Descripción de la arquitectura del sistema |
 | [docs/MODELOS.md](docs/MODELOS.md) | Definición de modelos de datos y relaciones |
+| [docs/BEST_PRACTICES.md](docs/BEST_PRACTICES.md) | **Mejores prácticas de desarrollo y seguridad** |
 | [docs/API.md](docs/API.md) | Documentación completa de endpoints de API |
 | [docs/DESARROLLO.md](docs/DESARROLLO.md) | Guía para desarrolladores |
 | [docs/DOCUMENTACION.md](docs/DOCUMENTACION.md) | Índice completo de toda la documentación |

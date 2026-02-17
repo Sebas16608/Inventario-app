@@ -1,6 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.permissions import AllowAny
 
 
 def notexist():
@@ -11,6 +12,7 @@ class SuperApiView(APIView):
     model = None
     serializer_class = None
     filter_fields = []
+    permission_classes = (AllowAny,)  # Override in subclasses as needed
 
     def get(self, request, pk=None):
         # GET por ID (path param)

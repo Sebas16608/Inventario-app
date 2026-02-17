@@ -6,7 +6,135 @@ Esta guía contiene recomendaciones para desarrollo, seguridad y operación de I
 
 ---
 
-## 💻 Desarrollo
+## � Seguridad
+
+### 1. Autenticación con JWT
+
+**✅ BIEN:**
+```python
+# Use permission_classes para proteger endpoints
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.views import APIView
+
+class ProductAPI(APIView):
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request):
+        # Solo usuarios autenticados pueden acceder
+        user = request.user
+        return Response({"user": user.username})
+```
+
+**✅ BIEN - Endpoints públicos:**
+```python
+# Para endpoints de login/registro, permite acceso sin token
+from rest_framework.permissions import AllowAny
+
+class LoginAPI(APIView):
+    permission_classes = [AllowAny]
+```
+
+**❌ MALO:**
+```python
+# No proteger endpoints que requieren autenticación
+def product_list(request):
+    products = Product.objects.all()  # ¡Cualquiera puede ver todo!
+    return Response(products)
+```
+
+### 2. Refrescar Tokens
+
+**✅ BIEN:**
+```javascript
+// Refrescar token ANTES de que expire
+const refreshTokenIfNeeded = async () => {
+  const expiryTime = localStorage.getItem('token_expiry');
+  const now = new Date().getTime();
+  
+  // Refrescar si le quedan menos de 5 minutos
+  if (now > expiryTime - (5 * 60 * 1000)) {
+    await refreshAccessToken();
+  }
+};
+
+// O mejor: Usar interceptors
+axios.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    if (error.response.status === 401) {
+      const data = await refreshAccessToken();
+      return axios(error.config);
+    }
+    return Promise.reject(error);
+  }
+);
+```
+
+### 3. Almacenar Tokens de Forma Segura
+
+**✅ BIEN (Web):**
+```javascript
+// Guardar en sessionStorage (elimina al cerrar el navegador)
+sessionStorage.setItem('access_token', token);
+
+// O usar httpOnly cookies en el backend (más seguro contra XSS)
+```
+
+**✅ BIEN (Mobile):**
+```javascript
+// En React Native, almacenar en AsyncStorage o Keychain
+import AsyncStorage from '@react-native-async-storage/async-storage';
+await AsyncStorage.setItem('access_token', token);
+```
+
+### 4. Aislamiento por Empresa (Multi-Tenancy)
+
+**✅ BIEN:**
+```python
+# En BaseCompanyAPIView, validar que el objeto pertenece a la empresa del usuario
+from inventario.views.base_views import BaseCompanyAPIView
+
+class ProductAPI(BaseCompanyAPIView):
+    model = Product
+    serializer_class = ProductSerializer
+    
+    def get_company(self):
+        # El usuario puede SOLO acceder a su empresa
+        return self.request.user.profile.company
+```
+
+**❌ MALO:**
+```python
+# Permitir que se especifique company_id en request
+def update_product(request, pk):
+    product = Product.objects.get(id=pk)
+    product.company_id = request.data.get('company_id')  # ¡INSEGURO!
+    product.save()
+```
+
+### 5. Variables de Entorno en Producción
+
+**✅ BIEN:**
+```bash
+# .env.production
+DEBUG=False
+SECRET_KEY=random_secure_key_from_environment
+ALLOWED_HOSTS=tu-dominio.com,www.tu-dominio.com
+SECURE_SSL_REDIRECT=True
+SESSION_COOKIE_SECURE=True
+SECURE_HSTS_SECONDS=31536000
+```
+
+**❌ MALO:**
+```python
+# Hardcodear valores en código
+SECRET_KEY = "mi_clave_super_secreta"  # ¡NUNCA!
+DEBUG = True  # En producción ¡NUNCA!
+```
+
+---
+
+## �💻 Desarrollo
 
 ### 1. Estructura de Código
 

@@ -7,9 +7,16 @@ Autenticación y Usuarios: http://localhost:8000/auth/
 Productos e Inventario:    http://localhost:8000/api/
 ```
 
-## 🔐 Autenticación
+## 🔐 Autenticación con JWT
 
-La API utiliza **JWT (JSON Web Tokens)** para autenticación.
+La API utiliza **JWT (JSON Web Tokens)** para autenticación y autorización segura.
+
+### Configuración JWT
+
+- **Access Token Lifetime**: 1 hora (3600 segundos)
+- **Refresh Token Lifetime**: 7 días
+- **Algorithm**: HS256
+- **Token Rotation**: Habilitado (rotación de refresh tokens)
 
 ### Registro de Usuario
 
@@ -31,15 +38,20 @@ Content-Type: application/json
 **Respuesta (201 Created):**
 ```json
 {
-  "id": 1,
-  "username": "sebastian",
-  "email": "sebastian@example.com"
+  "user": {
+    "id": 1,
+    "username": "sebastian",
+    "email": "sebastian@example.com"
+  },
+  "refresh": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...",
+  "access": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...",
+  "message": "User registered successfully"
 }
 ```
 
 ---
 
-### Login (Obtener Token)
+### Login (Obtener Tokens)
 
 ```http
 POST /auth/login/
@@ -54,28 +66,121 @@ Content-Type: application/json
 }
 ```
 
-**Respuesta (201 Created):**
+**Respuesta (200 OK):**
 ```json
 {
+  "user": {
+    "id": 1,
+    "username": "sebastian",
+    "email": "sebastian@example.com"
+  },
   "refresh": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...",
   "access": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...",
-  "username": "sebastian",
-  "email": "sebastian@example.com"
+  "message": "Login successful"
+}
+```
+
+---
+
+### Refrescar Access Token
+
+El access token tiene una duración de **1 hora**. Cuando expire, utiliza el refresh token para obtener uno nuevo:
+
+```http
+POST /auth/token/refresh/
+Content-Type: application/json
+```
+
+**Body Requerido:**
+```json
+{
+  "refresh": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
+}
+```
+
+**Respuesta (200 OK):**
+```json
+{
+  "access": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
 }
 ```
 
 ### Usar Token en Requests
 
-Incluir el token `access` en el header `Authorization`:
+Incluir el token `access` en el header `Authorization` con el prefijo `Bearer`:
 
 ```bash
 Authorization: Bearer <access_token>
 ```
 
-**Ejemplo:**
+**Ejemplo con cURL:**
 ```bash
 curl -X GET http://localhost:8000/auth/users/ \
   -H "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
+```
+
+**Ejemplo con JavaScript (Fetch API):**
+```javascript
+fetch('http://localhost:8000/auth/users/', {
+  method: 'GET',
+  headers: {
+    'Authorization': 'Bearer ' + accessToken,
+    'Content-Type': 'application/json'
+  }
+})
+.then(response => response.json())
+.then(data => console.log(data));
+```
+
+**Ejemplo con Python (Requests):**
+```python
+import requests
+
+headers = {
+    'Authorization': f'Bearer {access_token}',
+    'Content-Type': 'application/json'
+}
+
+response = requests.get('http://localhost:8000/auth/users/', headers=headers)
+data = response.json()
+print(data)
+```
+
+---
+
+### Manejo de Errores de Autenticación
+
+**401 Unauthorized - Token Expirado:**
+```json
+{
+  "detail": "Given token not valid for any token type",
+  "code": "token_not_valid",
+  "messages": [
+    {
+      "token_class": "AccessToken",
+      "token_type": "access",
+      "message": "Token is invalid or expired"
+    }
+  ]
+}
+```
+
+**Solución**: Usa el refresh token para obtener uno nuevo.
+
+**401 Unauthorized - Token Inválido:**
+```json
+{
+  "detail": "Invalid token."
+}
+```
+
+**Solución**: Vuelve a hacer login.
+
+**403 Forbidden - Sin Permisos:**
+```json
+{
+  "detail": "You do not have permission to perform this action."
+}
 ```
 
 ---
