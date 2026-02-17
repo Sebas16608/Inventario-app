@@ -1,0 +1,35 @@
+services:
+  - type: web
+    name: inventario-app
+    env: python
+    region: oregon
+    plan: standard
+    buildCommand: cd backend && pip install -r requirements.txt
+    startCommand: cd backend && gunicorn core.wsgi:application --bind 0.0.0.0:$PORT --workers 3
+    healthCheckPath: /admin/
+    routes:
+      - type: http
+        source: /
+        destination: http://localhost
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.13.1
+      - key: DJANGO_SETTINGS_MODULE
+        value: core.settings
+      - key: DEBUG
+        value: "False"
+      - key: SECURE_SSL_REDIRECT
+        value: "True"
+      - key: SESSION_COOKIE_SECURE
+        value: "True"
+      - key: CSRF_COOKIE_SECURE
+        value: "True"
+      - key: SECURE_HSTS_SECONDS
+        value: "31536000"
+      - key: SECURE_HSTS_INCLUDE_SUBDOMAINS
+        value: "True"
+
+databases:
+  - name: inventario-db
+    databaseCluster: inventario-cluster
+    region: oregon

@@ -1,61 +1,55 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+*.egg-info/
+dist/
+build/
+
+# Django
+*.log
+local_settings.py
+/media
+/staticfiles
+db.sqlite3
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
 # Git
 .git
 .gitignore
 .gitattributes
 
-# Python
-__pycache__
-.Python
-.venv
-venv
-ENV
-env
-*.pyc
-*.pyo
-*.egg-info
-dist
-build
-.pytest_cache
-.coverage
-htmlcov
-
-# IDE
-.vscode
-.idea
-*.swp
-*.swo
-.DS_Store
-*.sublime-project
-*.sublime-workspace
-
 # Environment
 .env
 .env.local
 .env.*.local
+.venv
 
-# OS
-Thumbs.db
-Desktop.ini
-
-# Project specific
-logs/
-staticfiles/
-media/
-*.db
-.sqlite3
+# Node (para frontend)
+node_modules/
+npm-debug.log*
+yarn-error.log*
+.next/
 
 # Docker
-Dockerfile*
-docker-compose*.yml
 .dockerignore
+Dockerfile
 
-# CI/CD
-.github
-.gitlab-ci.yml
-.circleci
-
-# Documentation
-README.md
-docs/
-CONTRIBUTING.md
-LICENSE
+# Miscellaneous
+.coverage
+.pytest_cache/
+htmlcov/
+*.egg
+.eggs/
