@@ -1,43 +1,39 @@
-# Build stage
-FROM python:3.11-slim as builder
+FROM python:3.13-slim
 
+# Evita archivos .pyc y activa logs inmediatos
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
+# Directorio de trabajo
 WORKDIR /app
 
-# Copy requirements and install Python dependencies
-COPY requirements.txt .
-RUN pip install --user --no-cache-dir -r requirements.txt
-
-# Runtime stage
-FROM python:3.11-slim
-
-WORKDIR /app
-
-# Install runtime system dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends \
+# Instalar dependencias del sistema necesarias
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    libpq-dev \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy Python dependencies from builder
-COPY --from=builder /root/.local /root/.local
+# Copiar requirements primero (mejor cache)
+COPY requirements.txt .
 
-# Set environment variables
-ENV PATH=/root/.local/bin:$PATH
-ENV PYTHONUNBUFFERED=1
-ENV PYTHONDONTWRITEBYTECODE=1
+# Instalar dependencias Python
+RUN pip install --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt && \
+    pip install gunicorn
 
-# Copy project files
+# Copiar el proyecto
 COPY . .
 
-# Create directories for logs and static files
-RUN mkdir -p /app/logs /app/staticfiles /app/media
-
-# Copy entrypoint script
-COPY entrypoint.sh /app/
+# Dar permisos al entrypoint
 RUN chmod +x /app/entrypoint.sh
 
-# Expose port
+# Puerto
 EXPOSE 8000
 
-# Health check - verifies the app is running
+# Healthcheck opcional
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
     CMD curl -f http://localhost:8000/admin/ || exit 1
+
+# Comando final
+CMD ["/app/entrypoint.sh"]
