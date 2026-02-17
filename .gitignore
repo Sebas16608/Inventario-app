@@ -51,11 +51,6 @@ MANIFEST
 *.sublime-project
 *.sublime-workspace
 
-# Static and Media
-staticfiles/
-media/
-/static/
-
 # Logs
 *.log
 logs/
