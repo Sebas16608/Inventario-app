@@ -314,7 +314,7 @@ Qué pasa realmente.
 ## Información del Sistema
 
 - Python: 3.10
-- Django: 6.0.2
+- Django: 5.1.5
 - Sistema Operativo: Ubuntu 22.04
 
 ## Logs/Error Messages

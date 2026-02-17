@@ -196,5 +196,5 @@ Ajusta `--workers` según los cores disponibles:
 
 - [Dockerfile oficial](https://docs.docker.com/engine/reference/builder/)
 - [Docker Compose docs](https://docs.docker.com/compose/)
-- [Django + Docker](https://docs.djangoproject.com/en/6.0/howto/deployment/wsgi/gunicorn/)
+- [Django + Docker](https://docs.djangoproject.com/en/5.1/howto/deployment/wsgi/gunicorn/)
 - [Gunicorn docs](https://gunicorn.org/)

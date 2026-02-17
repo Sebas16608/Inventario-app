@@ -913,7 +913,7 @@ Antes de deployar a producción:
 
 ## 💡 Recursos Recomendados
 
-- [Django Best Practices](https://docs.djangoproject.com/en/6.0/topics/db/optimization/)
+- [Django Best Practices](https://docs.djangoproject.com/en/5.1/topics/db/optimization/)
 - [OWASP Top 10](https://owasp.org/www-project-top-ten/)
 - [12 Factor App](https://12factor.net/)
 - [Google Cloud Best Practices](https://cloud.google.com/docs/best-practices)

@@ -438,5 +438,5 @@ Para problemas o preguntas, contactar a: sebastian@example.com
 
 - [Docker Documentation](https://docs.docker.com)
 - [Neon Database Docs](https://neon.tech/docs)
-- [Django Deployment Checklist](https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/)
+- [Django Deployment Checklist](https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/)
 - [Nginx Documentation](https://nginx.org/en/docs/)
