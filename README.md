@@ -31,8 +31,12 @@ Inventario App es una plataforma SaaS para la gestión integral de inventarios q
 | Documento | Propósito |
 |-----------|-----------|
 | **[QUICKSTART.md](QUICKSTART.md)** | 👈 **COMIENZA AQUÍ** - Instrucciones rápidas |
+| **[FRONTEND_SETUP.md](FRONTEND_SETUP.md)** | 🎨 Guía de setup del frontend Next.js |
+| **[FRONTEND_SUMMARY.md](FRONTEND_SUMMARY.md)** | 📊 Resumen de lo que incluye el frontend |
+| **[FRONTEND_CRUD_GUIDE.md](FRONTEND_CRUD_GUIDE.md)** | 🔧 Cómo completar operaciones CRUD |
 | [RENDER_DEPLOYMENT.md](RENDER_DEPLOYMENT.md) | Deployment en Render.com |
 | [DEPLOYMENT_CHECKLIST.md](DEPLOYMENT_CHECKLIST.md) | Checklist pre-deployment |
+| [backend/README.md](backend/README.md) | Guía del backend Django |
 | [PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md) | Estructura del proyecto |
 | [backend/README.md](backend/README.md) | Guía del backend Django |
 
@@ -102,7 +106,14 @@ Inventario-app/
 │   ├── README.md                  # Guía del backend ⭐
 │   └── entrypoint.sh
 │
-├── 🎨 frontend/                   # React/Next.js (coming soon)
+├── 🎨 frontend/                   # Next.js 14 + React (✅ READY!)
+│   ├── app/                       # Páginas
+│   ├── components/                # Componentes reutilizables
+│   ├── lib/                       # Cliente API y hooks
+│   ├── types/                     # TypeScript types
+│   ├── package.json
+│   ├── README.md                  # Documentación frontend ⭐
+│   └── quickstart.sh              # Setup automático
 │
 ├── 🐳 DOCKER
 │   ├── Dockerfile                 # Imagen principal

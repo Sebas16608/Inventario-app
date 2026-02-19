@@ -7,7 +7,7 @@ from rest_framework import status
 
 from inventario.models.movement import Movement
 from inventario.models.batch import Batch
-from inventario.serializers.movement_serializer import MovementSerializer
+from inventario.serializers.movement_serializer import MovementSerializer, MovementCreateSerializer
 from inventario.views.base_views import BaseCompanyAPIView
 from inventario.services.stock_service import StockService
 
@@ -91,12 +91,12 @@ class MovementAPIView(BaseCompanyAPIView):
         Uses StockService to ensure data consistency.
         
         Required Fields (varies by movement_type):
-            - batch_id: int (batch ID)
+            - batch: int (batch ID)
             - movement_type: str (IN, OUT, ADJUST, or EXPIRED)
             - quantity: int
             
         Optional Fields:
-            - note: str
+            - reason: str (alias for note)
             
         For specific operations, prefer dedicated endpoints:
         - Stock IN: POST /products/{id}/stock/in/
@@ -108,31 +108,16 @@ class MovementAPIView(BaseCompanyAPIView):
         try:
             company = self.get_company()
             
-            # Validate input
-            batch_id = request.data.get('batch_id')
-            movement_type = request.data.get('movement_type')
-            quantity = request.data.get('quantity')
-            note = request.data.get('note')
-            
-            if not all([batch_id, movement_type, quantity]):
+            # Validate using the create serializer
+            serializer = MovementCreateSerializer(data=request.data)
+            if not serializer.is_valid():
                 return Response(
-                    {
-                        "detail": "batch_id, movement_type, and quantity are required"
-                    },
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-            
-            # Validate movement type
-            valid_types = ['IN', 'OUT', 'ADJUST', 'EXPIRED']
-            if movement_type not in valid_types:
-                return Response(
-                    {
-                        "detail": f"movement_type must be one of: {', '.join(valid_types)}"
-                    },
+                    serializer.errors,
                     status=status.HTTP_400_BAD_REQUEST
                 )
             
             # Get batch and validate it belongs to user's company
+            batch_id = serializer.validated_data.get('batch')
             try:
                 batch = Batch.objects.get(
                     id=batch_id,
@@ -146,19 +131,23 @@ class MovementAPIView(BaseCompanyAPIView):
                     status=status.HTTP_404_NOT_FOUND
                 )
             
+            movement_type = serializer.validated_data.get('movement_type')
+            quantity = serializer.validated_data.get('quantity')
+            reason = serializer.validated_data.get('reason', '')
+            
             # Handle different movement types
             try:
                 if movement_type == 'OUT':
                     StockService.registrar_salida(
                         product=batch.product,
                         quantity=int(quantity),
-                        note=note
+                        note=reason
                     )
                 elif movement_type == 'ADJUST':
                     StockService.ajustar_stock(
                         batch=batch,
                         new_quantity=int(quantity),
-                        note=note
+                        note=reason
                     )
                 elif movement_type == 'EXPIRED':
                     StockService.marcar_vencido(batch)
@@ -169,14 +158,14 @@ class MovementAPIView(BaseCompanyAPIView):
                         batch=batch,
                         movement_type='IN',
                         quantity=int(quantity),
-                        note=note or 'Manual stock in'
+                        note=reason or 'Manual stock in'
                     )
                 
                 # Get the last created movement
                 movement = batch.movements.latest('created_at')
-                serializer = self.serializer_class(movement)
+                response_serializer = MovementSerializer(movement)
                 return Response(
-                    serializer.data,
+                    response_serializer.data,
                     status=status.HTTP_201_CREATED
                 )
                 

@@ -81,13 +81,14 @@ class CategoryAPIView(BaseCompanyAPIView):
             Response: Created category data
         """
         try:
+            # Get company from user profile
             company = self.get_company()
             
-            # Create copy of data and force company assignment
-            data = request.data.copy()
-            data['company'] = company.id
-            
-            serializer = self.serializer_class(data=data)
+            # Pass company in context, not in data
+            serializer = self.serializer_class(
+                data=request.data,
+                context={'company': company}
+            )
             if serializer.is_valid():
                 serializer.save()
                 return Response(
@@ -99,9 +100,25 @@ class CategoryAPIView(BaseCompanyAPIView):
                 serializer.errors,
                 status=status.HTTP_400_BAD_REQUEST
             )
-
-        except Exception as exc:
-            return self.handle_exception(exc)
+        
+        except (ValueError, AttributeError) as e:
+            return Response(
+                {"error": f"Error de configuración: {str(e)}"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        except PermissionError as e:
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        except Exception as e:
+            import traceback
+            print(f"Error inesperado en POST /categories/: {str(e)}")
+            traceback.print_exc()
+            return Response(
+                {"error": f"Error interno del servidor: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
     def put(self, request, pk):
         """
@@ -118,11 +135,12 @@ class CategoryAPIView(BaseCompanyAPIView):
             category = self.get_company_queryset().get(pk=pk)
             self.validate_company_ownership(category)
             
-            # Preserve company - don't allow changing it
-            data = request.data.copy()
-            data['company'] = category.company.id
-            
-            serializer = self.serializer_class(category, data=data)
+            # Pass company in context for serializer
+            serializer = self.serializer_class(
+                category,
+                data=request.data,
+                context={'company': category.company}
+            )
             if serializer.is_valid():
                 serializer.save()
                 return Response(serializer.data, status=status.HTTP_200_OK)
@@ -150,15 +168,12 @@ class CategoryAPIView(BaseCompanyAPIView):
             category = self.get_company_queryset().get(pk=pk)
             self.validate_company_ownership(category)
             
-            # Preserve company - don't allow changing it
-            data = request.data.copy()
-            if 'company' in data:
-                del data['company']
-            
+            # Pass company in context and use partial=True
             serializer = self.serializer_class(
                 category,
-                data=data,
-                partial=True
+                data=request.data,
+                partial=True,
+                context={'company': category.company}
             )
             if serializer.is_valid():
                 serializer.save()

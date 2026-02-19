@@ -7,7 +7,7 @@ from rest_framework import status
 
 from inventario.models.batch import Batch
 from inventario.models.product import Product
-from inventario.serializers.batch_serializer import BatchCreateSerializer
+from inventario.serializers.batch_serializer import BatchCreateSerializer, BatchSerializer
 from inventario.views.base_views import BaseCompanyAPIView
 from inventario.services.stock_service import StockService
 
@@ -98,12 +98,13 @@ class BatchAPIView(BaseCompanyAPIView):
         Uses StockService to ensure data consistency.
         
         Required Fields:
-            - product_id: int
-            - quantity: int (quantity_received)
+            - product: int (product ID)
+            - quantity_received: int
             - purchase_price: decimal
             - supplier: str
             
         Optional Fields:
+            - quantity_available: int (defaults to quantity_received)
             - expiration_date: date
             
         Returns:
@@ -113,7 +114,7 @@ class BatchAPIView(BaseCompanyAPIView):
             company = self.get_company()
             
             # Validate serializer structure
-            serializer = self.serializer_class(data=request.data)
+            serializer = BatchCreateSerializer(data=request.data)
             if not serializer.is_valid():
                 return Response(
                     serializer.errors,
@@ -121,10 +122,10 @@ class BatchAPIView(BaseCompanyAPIView):
                 )
             
             # Get product and validate it belongs to user's company
-            product_id = request.data.get('product_id')
+            product_id = serializer.validated_data.get('product')
             if not product_id:
                 return Response(
-                    {"detail": "product_id is required"},
+                    {"detail": "product is required"},
                     status=status.HTTP_400_BAD_REQUEST
                 )
             
@@ -144,14 +145,15 @@ class BatchAPIView(BaseCompanyAPIView):
             # Use StockService to create batch (ensures data consistency)
             batch = StockService.registrar_entrada(
                 product=product,
-                quantity=serializer.validated_data['quantity'],
+                quantity=serializer.validated_data['quantity_received'],
                 purchase_price=serializer.validated_data['purchase_price'],
                 expiration_date=serializer.validated_data.get('expiration_date'),
                 supplier=serializer.validated_data['supplier']
             )
             
+            response_serializer = BatchSerializer(batch)
             return Response(
-                BatchSerializer.serialize(batch),
+                response_serializer.data,
                 status=status.HTTP_201_CREATED
             )
 

@@ -93,12 +93,8 @@ class ProductAPIView(BaseCompanyAPIView):
         try:
             company = self.get_company()
             
-            # Create copy of data and force company assignment
-            data = request.data.copy()
-            data['company'] = company.id
-            
             # Validate that category belongs to same company
-            category_id = data.get('category')
+            category_id = request.data.get('category')
             if category_id:
                 try:
                     category = Category.objects.get(
@@ -113,7 +109,11 @@ class ProductAPIView(BaseCompanyAPIView):
                         status=status.HTTP_400_BAD_REQUEST
                     )
             
-            serializer = self.serializer_class(data=data)
+            # Pass company in context, not in data
+            serializer = self.serializer_class(
+                data=request.data,
+                context={'company': company}
+            )
             if serializer.is_valid():
                 serializer.save()
                 return Response(
@@ -126,8 +126,24 @@ class ProductAPIView(BaseCompanyAPIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        except Exception as exc:
-            return self.handle_exception(exc)
+        except (ValueError, AttributeError) as e:
+            return Response(
+                {"error": f"Error de configuración: {str(e)}"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        except PermissionError as e:
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        except Exception as e:
+            import traceback
+            print(f"Error inesperado en POST /products/: {str(e)}")
+            traceback.print_exc()
+            return Response(
+                {"error": f"Error interno del servidor: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
     def put(self, request, pk):
         """
@@ -145,12 +161,8 @@ class ProductAPIView(BaseCompanyAPIView):
             product = self.get_company_queryset().get(pk=pk)
             self.validate_company_ownership(product)
             
-            # Preserve company - don't allow changing it
-            data = request.data.copy()
-            data['company'] = product.company.id
-            
             # Validate category if provided
-            category_id = data.get('category')
+            category_id = request.data.get('category')
             if category_id and category_id != product.category.id:
                 try:
                     Category.objects.get(id=category_id, company=company)
@@ -162,7 +174,12 @@ class ProductAPIView(BaseCompanyAPIView):
                         status=status.HTTP_400_BAD_REQUEST
                     )
             
-            serializer = self.serializer_class(product, data=data)
+            # Pass company in context
+            serializer = self.serializer_class(
+                product,
+                data=request.data,
+                context={'company': product.company}
+            )
             if serializer.is_valid():
                 serializer.save()
                 return Response(serializer.data, status=status.HTTP_200_OK)
@@ -191,13 +208,8 @@ class ProductAPIView(BaseCompanyAPIView):
             product = self.get_company_queryset().get(pk=pk)
             self.validate_company_ownership(product)
             
-            # Preserve company - don't allow changing it
-            data = request.data.copy()
-            if 'company' in data:
-                del data['company']
-            
             # Validate category if provided
-            category_id = data.get('category')
+            category_id = request.data.get('category')
             if category_id and category_id != product.category.id:
                 try:
                     Category.objects.get(id=category_id, company=company)
@@ -209,10 +221,12 @@ class ProductAPIView(BaseCompanyAPIView):
                         status=status.HTTP_400_BAD_REQUEST
                     )
             
+            # Pass company in context and use partial=True
             serializer = self.serializer_class(
                 product,
-                data=data,
-                partial=True
+                data=request.data,
+                partial=True,
+                context={'company': product.company}
             )
             if serializer.is_valid():
                 serializer.save()

@@ -1,442 +1,191 @@
-# 🚀 Guía de Deployment con Docker
+# Inventario App - Estructura del Proyecto
 
-## Requisitos Previos
+Este proyecto está reorganizado con una estructura clara de frontend y backend.
 
-- Docker y Docker Compose instalados
-- Base de datos PostgreSQL externa (ej: Neon Database, AWS RDS, etc.)
-- Dominio configurado (para producción)
-- Certificado SSL (para HTTPS en producción)
+## Estructura de Carpetas
 
----
+```
+Inventario-app/
+├── backend/                      # Aplicación Django
+│   ├── core/                     # Configuración principal de Django
+│   ├── accounts/                 # App de autenticación
+│   ├── inventario/               # App principal de inventario
+│   ├── manage.py                 # Script de gestión Django
+│   ├── API.py                    # Clases base de API
+│   ├── requirements.txt          # Dependencias Python
+│   ├── Dockerfile                # Configuración Docker
+│   ├── entrypoint.sh             # Script de inicio del contenedor
+│   ├── Procfile                  # Configuración para Render/Heroku
+│   ├── runtime.txt               # Versión de Python para Render
+│   ├── build.sh                  # Script de build para Render
+│   ├── logs/                     # Archivos de log
+│   ├── staticfiles/              # Archivos estáticos (generado)
+│   └── media/                    # Archivos subidos por usuarios
+│
+├── frontend/                     # Aplicación Frontend (vacío por ahora)
+│
+├── docs/                         # Documentación del proyecto
+├── docker-compose.yml            # Orquestación de contenedores
+├── render.yaml                   # Configuración para Render
+├── nginx.conf                    # Configuración Nginx (producción)
+├── manage.py                     # Wrapper para ejecutar Django desde raíz
+├── .env                          # Variables de entorno (no commitear)
+├── .env.example                  # Ejemplo de variables de entorno
+└── README.md                     # Este archivo
+```
 
-## 📋 Pasos para el Deployment
+## Configuración Local
 
-### 1. **Preparar el Servidor**
+### Requisitos
+- Python 3.13+
+- PostgreSQL (opcional, SQLite funciona para desarrollo)
+- Docker y Docker Compose (opcional)
 
+### Instalación
+
+1. **Clonar el repositorio**
 ```bash
-# Actualizar sistema
-sudo apt update && sudo apt upgrade -y
-
-# Instalar Docker
-curl -fsSL https://get.docker.com -o get-docker.sh
-sudo sh get-docker.sh
-
-# Instalar Docker Compose
-sudo curl -L "https://github.com/docker/compose/releases/download/v2.20.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-sudo chmod +x /usr/local/bin/docker-compose
-
-# Agregar usuario a grupo docker (opcional)
-sudo usermod -aG docker $USER
-
-# Clonar repositorio
-cd /home/usuario
-git clone https://github.com/Sebas16608/Inventario-app.git
+git clone <repository-url>
 cd Inventario-app
 ```
 
-### 2. **Preparar Variables de Entorno**
-
-⚠️ **IMPORTANTE**: Nunca expongas el `.env` en el repositorio
-
+2. **Crear entorno virtual**
 ```bash
-# Crear archivo de configuración local (NO se seguirá en git)
-touch .env
-
-# Editar con tus valores
-nano .env
+python -m venv .venv
+source .venv/bin/activate  # En Windows: .venv\Scripts\activate
 ```
 
-**Variables requeridas en `.env`:**
-
-```env
-# Django Configuration
-DEBUG=False
-SECRET_KEY=tu-secret-key-super-seguro-aleatorio
-
-# Hosts permitidos
-ALLOWED_HOSTS=tu-dominio.com,www.tu-dominio.com,ip-del-servidor
-
-# DATABASE - URL de Neon o tu proveedor externo
-DATABASE_URL=postgresql://usuario:contraseña@host:puerto/nombre_bd?sslmode=require
-
-# HTTPS Security (cambiar a True en producción)
-SECURE_SSL_REDIRECT=True
-SESSION_COOKIE_SECURE=True
-CSRF_COOKIE_SECURE=True
-CSRF_TRUSTED_ORIGINS=https://tu-dominio.com,https://www.tu-dominio.com
-
-# CORS
-CORS_ALLOWED_ORIGINS=https://tu-dominio.com,https://www.tu-dominio.com,https://app.tu-dominio.com
-
-# Logging
-DJANGO_LOG_LEVEL=WARNING
+3. **Instalar dependencias**
+```bash
+pip install -r backend/requirements.txt
 ```
 
-**Generar un SECRET_KEY seguro:**
+4. **Configurar variables de entorno**
 ```bash
-python3 -c "import secrets; print(secrets.token_urlsafe(50))"
+cp .env.example .env
+# Editar .env con tus configuraciones locales
 ```
 
-### 3. **Certificados SSL (Recomendado)**
-
+5. **Ejecutar migraciones**
 ```bash
-# Crear directorio para SSL
-mkdir -p ssl
-
-# Opción A: Usar Let's Encrypt con Certbot
-sudo apt install certbot python3-certbot-nginx -y
-
-# Generar certificado
-sudo certbot certonly --standalone -d tu-dominio.com -d www.tu-dominio.com
-
-# Copiar certificados al directorio del proyecto
-sudo cp /etc/letsencrypt/live/tu-dominio.com/fullchain.pem ssl/cert.pem
-sudo cp /etc/letsencrypt/live/tu-dominio.com/privkey.pem ssl/key.pem
-sudo chmod 644 ssl/*
-
-# Opción B: Generar certificado autofirmado (solo desarrollo)
-openssl req -x509 -newkey rsa:4096 -nodes -out ssl/cert.pem -keyout ssl/key.pem -days 365
+python manage.py migrate
 ```
 
-### 4. **Construir e Iniciar la Aplicación**
-
+6. **Iniciar servidor de desarrollo**
 ```bash
-# Construir la imagen Docker
-docker-compose build
+python manage.py runserver
+```
 
-# Ejecutar en background (solo Django)
+El servidor estará disponible en `http://localhost:8000`
+
+## Docker Local
+
+### Construir imagen
+```bash
+docker build -f backend/Dockerfile -t inventario-app .
+```
+
+### Ejecutar con Docker Compose
+```bash
 docker-compose up -d
-
-# Ver logs en tiempo real
-docker-compose logs -f web
-
-# Verificar estado de los contenedores
-docker-compose ps
-
-# Detener los contenedores
-docker-compose down
 ```
 
-### 5. **Con Nginx (Producción)**
-
-Si deseas usar Nginx como reverse proxy:
-
+Para ejecutar con Nginx (producción):
 ```bash
-# Iniciar con Nginx
 docker-compose --profile production up -d
-
-# Ver logs
-docker-compose logs -f nginx
-
-# Detener
-docker-compose --profile production down
 ```
 
----
+## Deployment en Render
 
-## 📊 Estructura de Contenedores
+### Requisitos
+- Cuenta en [Render.com](https://render.com)
+- Repositorio en GitHub
 
-### Configuración por Defecto (Desarrollo/Testing)
+### Pasos de Deployment
 
-```
-┌─────────────────┐
-│   Tu Máquina    │
-│                 │
-│  ┌───────────┐  │
-│  │  Django   │←──── Port 8000
-│  │ (Gunicorn)│  │
-│  └─────┬─────┘  │
-│        │        │
-│        ▼        │
-│  ┌───────────┐  │
-│  │ Neon/RDS  │  │
-│  │   (DB)    │  │
-│  └───────────┘  │
-└─────────────────┘
-```
+1. **Conectar repositorio a Render**
+   - Ir a Render Dashboard → New Web Service
+   - Seleccionar el repositorio de GitHub
+   - Seleccionar rama: `main`
 
-### Configuración con Nginx (Producción)
+2. **Configurar el servicio**
+   - Name: `inventario-backend`
+   - Runtime: `Python 3.13`
+   - Build Command: 
+     ```bash
+     cd backend && pip install -r requirements.txt && python manage.py collectstatic --noinput
+     ```
+   - Start Command:
+     ```bash
+     cd backend && gunicorn core.wsgi:application --bind 0.0.0.0:8000
+     ```
 
-```
-┌──────────────────────────┐
-│      Tu Máquina          │
-│                          │
-│  ┌──────────────────┐   │
-│  │  Nginx (Port 80) │←──── HTTP
-│  │ (Reverse Proxy)  │   │
-│  └────────┬─────────┘   │
-│           ▼              │
-│  ┌──────────────────┐   │
-│  │  Django:8000     │   │
-│  │  (Gunicorn)      │   │
-│  └────────┬─────────┘   │
-│           ▼              │
-│  ┌──────────────────┐   │
-│  │ Neon/RDS (DB)    │   │
-│  └──────────────────┘   │
-└──────────────────────────┘
-```
+3. **Agregar variables de entorno**
+   - `DEBUG`: `false`
+   - `SECRET_KEY`: (generar una segura)
+   - `ALLOWED_HOSTS`: `inventario-backend.onrender.com,localhost`
+   - `DATABASE_URL`: (proporcionada por Render)
+   - `SECURE_SSL_REDIRECT`: `true`
+   - `SESSION_COOKIE_SECURE`: `true`
+   - `CSRF_COOKIE_SECURE`: `true`
+   - `CSRF_TRUSTED_ORIGINS`: `https://inventario-backend.onrender.com`
+   - `CORS_ALLOWED_ORIGINS`: `https://inventario-backend.onrender.com`
 
----
+4. **Crear base de datos PostgreSQL en Render**
+   - Render Dashboard → New PostgreSQL
+   - Copiar la `CONNECTION_STRING` 
+   - Usar como `DATABASE_URL` en el servicio web
 
-## 🔧 Comandos Útiles
+5. **Deploy**
+   - Click en "Deploy" en Render Dashboard
+   - El deployment se completará automáticamente
 
+### Variables de Entorno Importantes
+
+| Variable | Desarrollo | Producción |
+|----------|-----------|-----------|
+| `DEBUG` | `True` | `False` |
+| `SECURE_SSL_REDIRECT` | `False` | `True` |
+| `SESSION_COOKIE_SECURE` | `False` | `True` |
+| `CSRF_COOKIE_SECURE` | `False` | `True` |
+
+## Estructura de URLs
+
+- **API REST**: `/api/*`
+- **Admin**: `/admin/` (solo con autenticación)
+- **Autenticación**: `/api/auth/*`
+
+## Troubleshooting
+
+### Error: "DATABASE_URL not set"
 ```bash
-# Ver logs de la aplicación
-docker-compose logs -f web
-
-# Acceder a la consola Django dentro del contenedor
-docker-compose exec web python manage.py shell
-
-# Crear un superusuario manualmente
-docker-compose exec web python manage.py createsuperuser
-
-# Ejecutar migraciones manualmente
-docker-compose exec web python manage.py migrate
-
-# Recolectar archivos estáticos manualmente
-docker-compose exec web python manage.py collectstatic --noinput
-
-# Reiniciar solo el servicio web
-docker-compose restart web
-
-# Reconstruir la imagen (después de actualizar requirements.txt)
-docker-compose build --no-cache
-
-# Ver estado detallado
-docker-compose ps -a
-docker stats
+# Asegúrate de configurar DATABASE_URL en .env
+export DATABASE_URL="postgresql://user:password@localhost:5432/inventario_db"
 ```
 
----
-
-## 🚨 Troubleshooting
-
-### Error: "DATABASE_URL is not set"
-
-```
-Solución: Asegúrate de que DATABASE_URL esté definido en el archivo .env
-```
-
-### Error: "Connection refused" a la base de datos
-
-```
-- Verifica que DATABASE_URL sea correcto
-- Comprueba que el servidor de BD está en línea y accesible
-- Revisa que no haya firewall bloqueando la connexión
-- Comprueba los logs: docker-compose logs web
-```
-
-### Error: "Static files not found"
-
-```
-Solución: Ejecuta
-docker-compose exec web python manage.py collectstatic --noinput --clear
-```
-
-### Verificar que la aplicación esté funcionando
-
+### Error: "Secret Key not found"
 ```bash
-# Revisar logs
-docker-compose logs web
-
-# Acceder a http://localhost:8000/admin (debe mostrar login)
-
-# Verificar healthcheck
-docker inspect inventario_app | grep -A 5 Health
+# Generar una nueva SECRET_KEY
+python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"
 ```
 
----
-
-## 🔒 Seguridad en Producción
-
-1. ✅ `DEBUG=False` en las variables
-2. ✅ `SECURE_SSL_REDIRECT=True` para forzar HTTPS
-3. ✅ Cookie segura: `SESSION_COOKIE_SECURE=True`
-4. ✅ CSRF seguro: `CSRF_COOKIE_SECURE=True`
-5. ✅ Certificado SSL actualizado
-6. ✅ Backup regular de la BD
-7. ✅ Monitoreo de logs
-8. ✅ Database URL seguro y no expuesto
-
----
-
-## 📈 Escalado
-
-Para mayores cargas, considera:
-
-```yaml
-# docker-compose.yml - Aumentar workers
-command: gunicorn core.wsgi:application --bind 0.0.0.0:8000 --workers 8
-```
-
-O usando un process manager como Supervisor o systemd.
-
----
-
-## 📝 Notas
-
-- La base de datos DEBE ser externa (Neon, AWS RDS, etc.)
-- Los logs se guardan en `/app/logs/django.log`
-- Los archivos estáticos se almacenan en `/app/staticfiles`
-- Los archivos media se almacenan en `/app/media`
-
-docker-compose ps
-```
-
-### 5. **Ejecutar Migraciones**
-
+### Archivos estáticos no se sirven
 ```bash
-# Las migraciones se ejecutan automáticamente en el entrypoint.sh
-# Pero si necesitas ejecutarlas manualmente:
-docker-compose exec web python manage.py migrate
-
-# Crear superadmin (opcional)
-docker-compose exec web python manage.py createsuperuser
+python manage.py collectstatic --noinput --clear
 ```
 
-### 6. **Recolectar Static Files**
+## API Documentation
 
-```bash
-# También se ejecuta automáticamente, pero si necesitas:
-docker-compose exec web python manage.py collectstatic --noinput
-```
+Ver `/docs` para documentación de API (si está configurada).
 
----
+## Contribuir
 
-## 📊 Monitoreo
+Ver `docs/CONTRIBUCIONES.md` para guías de contribución.
 
-### Ver logs en tiempo real
+## Licencia
 
-```bash
-# Todos los servicios
-docker-compose logs -f
+[Especificar licencia]
 
-# Solo Django
-docker-compose logs -f web
+## Soporte
 
-# Solo Nginx
-docker-compose logs -f nginx
-```
-
-### Verificar estado de contenedores
-
-```bash
-docker-compose ps
-```
-
-### Acceder al contenedor
-
-```bash
-docker-compose exec web bash
-```
-
----
-
-## 🔄 Actualizaciones
-
-### Actualizar el código
-
-```bash
-git pull origin main
-docker-compose build
-docker-compose up -d
-docker-compose exec web python manage.py migrate
-```
-
-### Limpiar volúmenes (destructivo)
-
-```bash
-# Eliminar todos los volúmenes (CUIDADO: borra la BD local)
-docker-compose down -v
-```
-
----
-
-## 🛠️ Troubleshooting
-
-### Error: "connection refused"
-
-```bash
-# Verificar que la BD Neon esté disponible
-# Probar conexión manual:
-psql postgresql://neondb_owner:npg_1JfSvbaj9dFm@ep-rough-haze-aiy3227g-pooler.c-4.us-east-1.aws.neon.tech/neondb?sslmode=require
-```
-
-### Error: "static files not found"
-
-```bash
-# Recolectar static files
-docker-compose exec web python manage.py collectstatic --noinput
-
-# Reiniciar nginx
-docker-compose restart nginx
-```
-
-### Error: "permission denied"
-
-```bash
-# Cambiar permisos si es necesario
-sudo chown -R $USER:$USER /ruta/del/proyecto
-```
-
----
-
-## 📈 Escalado
-
-### Aumentar workers de Gunicorn
-
-En `docker-compose.yml`, editar línea de comando de `web`:
-
-```bash
-gunicorn core.wsgi:application --bind 0.0.0.0:8000 --workers 8  # Aumentar de 4 a 8
-```
-
-### Usar Redis para cache/sessions
-
-```bash
-# Editar requirements.txt
-redis==4.5.4
-django-redis==5.2.0
-
-# Configurar en settings.py
-CACHES = {
-    "default": {
-        "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": "redis://redis:6379/1",
-    }
-}
-```
-
----
-
-## 🔒 Seguridad
-
-✅ **Checklist de Producción:**
-
-- [ ] SECRET_KEY cambiada
-- [ ] DEBUG=False
-- [ ] ALLOWED_HOSTS configurado
-- [ ] HTTPS habilitado (SECURE_SSL_REDIRECT=True)
-- [ ] Certificado SSL válido (no autofirmado)
-- [ ] Database URL verificada
-- [ ] CORS_ALLOWED_ORIGINS restringido
-- [ ] CSRF_TRUSTED_ORIGINS configurado
-- [ ] Backups configurados
-- [ ] Monitoreo de logs activo
-- [ ] Firewall configurado (solo puertos 80, 443)
-
----
-
-## 📞 Soporte
-
-Para problemas o preguntas, contactar a: sebastian@example.com
-
----
-
-## 🔗 Enlaces Útiles
-
-- [Docker Documentation](https://docs.docker.com)
-- [Neon Database Docs](https://neon.tech/docs)
-- [Django Deployment Checklist](https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/)
-- [Nginx Documentation](https://nginx.org/en/docs/)
+Para reportar issues, usa GitHub Issues.

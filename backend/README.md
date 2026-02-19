@@ -1,34 +1,277 @@
-# 🔙 Backend - Django Application
+# Backend - Sistema de Gestión de Inventario
 
-> **Django REST Framework API para Gestión de Inventario Multi-Empresa**
->
-> ✅ Production-ready • 🚀 Deployment-ready • 🧪 Fully tested
+Backend API construida con Django REST Framework para gestión de inventarios multi-empresa.
 
----
+## 🚀 Características
 
-## 📋 Descripción
+- **API RESTful** con Django REST Framework
+- **Autenticación JWT** con simplejwt (access: 1h, refresh: 7 días)
+- **Arquitectura Multi-Tenant** (aislamiento por empresa)
+- **Base de datos PostgreSQL** con migraciones automáticas
+- **Validación de datos** en serializers
+- **Gestión completa de inventario**: categorías, productos, lotes y movimientos
+- **CORS habilitado** para frontend
 
-Este directorio contiene la aplicación backend de Inventario-app, construida con **Django 5.1** y **Django REST Framework**. Proporciona una API RESTful completa para la gestión de:
+## 🛠️ Requisitos
 
-- 🏢 Empresas y sus inventarios
-- 📦 Productos y categorías
-- 📊 Lotes de productos con control de vencimiento
-- 🔄 Movimientos de stock (entradas, salidas, ajustes)
-- 👥 Usuarios con roles y permisos
-- 🔐 Autenticación y autorización JWT
+- Python 3.10+
+- PostgreSQL 12+
+- pip (gestor de paquetes de Python)
 
----
+## 📦 Instalación Rápida
 
-## 📂 Estructura del Backend
+```bash
+# 1. Crear entorno virtual
+python -m venv venv
+source venv/bin/activate
+
+# 2. Instalar dependencias
+pip install -r requirements.txt
+
+# 3. Configurar variables de entorno
+cp .env.example .env
+# Editar .env con tus credenciales
+
+# 4. Migraciones
+python manage.py migrate
+
+# 5. Ejecutar servidor
+python manage.py runserver
+```
+
+Servidor en: `http://localhost:8000`
+
+## 🏗️ Estructura
 
 ```
 backend/
-│
-├── 🎛️ DJANGO APPS (Módulos principales)
-│   │
-│   ├── core/                       # Configuración de Django
-│   │   ├── settings.py             # Settings principales
-│   │   ├── wsgi.py                # WSGI application
+├── accounts/           # Autenticación y usuarios
+│   ├── serializers/   # Validadores de entrada
+│   ├── views/         # Endpoints auth
+│   └── models.py      # User, Company, Profile
+├── inventario/         # Gestión de inventario
+│   ├── models/        # Category, Product, Batch, Movement
+│   ├── serializers/   # API serializers
+│   ├── views/         # API endpoints
+│   ├── services/      # StockService (lógica de negocio)
+│   └── migrations/    # Cambios de BD
+├── core/              # Configuración Django
+│   ├── settings.py    # Configuración principal
+│   ├── urls.py        # Rutas principales
+│   └── wsgi.py        # Para producción
+├── requirements.txt   # Dependencias
+└── manage.py         # Gestor de Django
+```
+
+## 🔑 Endpoints Principales
+
+### Autenticación (`/auth/`)
+```
+POST /auth/register/      - Registrar usuario + empresa
+POST /auth/login/         - Login
+POST /auth/token/refresh/ - Refrescar token
+```
+
+### Categorías (`/api/`)
+```
+GET    /api/categories/       - Listar
+POST   /api/categories/       - Crear
+PUT    /api/categories/{id}/  - Actualizar
+DELETE /api/categories/{id}/  - Eliminar
+```
+
+### Productos (`/api/`)
+```
+GET    /api/products/         - Listar
+POST   /api/products/         - Crear
+PUT    /api/products/{id}/    - Actualizar
+DELETE /api/products/{id}/    - Eliminar
+```
+
+### Lotes (`/api/`)
+```
+GET    /api/batches/          - Listar
+POST   /api/batches/          - Crear
+DELETE /api/batches/{id}/     - Eliminar
+```
+
+### Movimientos (`/api/`)
+```
+GET    /api/movements/        - Listar
+POST   /api/movements/        - Crear
+PATCH  /api/movements/{id}/   - Actualizar
+DELETE /api/movements/{id}/   - Eliminar
+```
+
+## 🔐 Autenticación JWT
+
+**Flujo:**
+1. `POST /auth/register/` → Usuario + empresa
+2. `POST /auth/login/` → email + contraseña
+3. Respuesta: `access_token` (1h) + `refresh_token` (7d)
+4. Incluir en headers: `Authorization: Bearer <token>`
+
+**Refresh:**
+```bash
+POST /auth/token/refresh/
+{
+  "refresh": "token-refresh"
+}
+```
+
+## 🏢 Multi-Tenancy
+
+La arquitectura garantiza aislamiento de datos:
+- `BaseCompanyAPIView` - Valida que usuario pertenece a empresa
+- Queryset filtering - Filtra automáticamente por empresa
+- Serializer context - Pasa empresa al crear/actualizar datos
+
+Ejemplo:
+```python
+# Solo ve productos de su empresa
+GET /api/products/
+→ SELECT * FROM products WHERE company_id = request.user.company_id
+```
+
+## 💾 Modelos de Datos
+
+### User
+```
+email, username, password, company, role, profile
+```
+
+### Company
+```
+name, created_at
+```
+
+### Category
+```
+name, slug (único por empresa), company
+```
+
+### Product
+```
+name, slug, category, supplier, cost_price, sale_price, stock, company
+```
+
+### Batch
+```
+product, quantity_received, quantity_available, purchase_price, 
+expiration_date, supplier, received_at
+```
+
+### Movement
+```
+batch, product, quantity, movement_type (IN|OUT|ADJUST|EXPIRED), 
+reason, created_at, created_by
+```
+
+## 📝 Variables de Entorno
+
+```env
+SECRET_KEY=django-insecure-...
+DEBUG=True
+DATABASE_URL=postgresql://user:pass@localhost:5432/inventario_db
+JWT_SECRET_KEY=tu-clave-jwt
+ALLOWED_HOSTS=localhost,127.0.0.1
+CORS_ALLOWED_ORIGINS=http://localhost:3000
+```
+
+## 🔌 Servicios Importantes
+
+### StockService
+Maneja la lógica de movimientos de stock:
+
+```python
+# Registro de entrada
+StockService.registrar_entrada(
+    product=product,
+    quantity=100,
+    purchase_price=10.50,
+    expiration_date="2025-12-31",
+    supplier="Proveedor X"
+)
+
+# Registro de salida
+StockService.registrar_salida(
+    product=product,
+    quantity=50,
+    note="Venta cliente"
+)
+```
+
+## 🧪 Testing
+
+```bash
+# Ejecutar tests
+python manage.py test
+
+# Con cobertura
+pip install coverage
+coverage run --source='.' manage.py test
+coverage report
+```
+
+## 🚢 Deployment
+
+### Docker
+```bash
+docker build -t inventario-backend .
+docker run -p 8000:8000 --env-file .env inventario-backend
+```
+
+### Producción
+Ver `docs/RENDER_DEPLOYMENT.md` para deployment en Render.com
+
+## 🔒 Seguridad
+
+✅ Contraseñas hasheadas (PBKDF2)  
+✅ CORS restringido a frontend  
+✅ Validación de entrada en serializers  
+✅ Aislamiento multi-tenant  
+✅ JWT con expiración  
+✅ Rate limiting recomendado  
+
+## 🐛 Troubleshooting
+
+### Error BD
+```bash
+# Verificar PostgreSQL
+sudo systemctl status postgresql
+
+# Chequear .env
+cat .env | grep DATABASE_URL
+```
+
+### Migraciones
+```bash
+# Ver estado
+python manage.py showmigrations
+
+# Crear nueva
+python manage.py makemigrations
+
+# Aplicar
+python manage.py migrate
+```
+
+### Puerto ocupado
+```bash
+python manage.py runserver 8001
+```
+
+## 📚 Documentación
+
+- `/docs/API.md` - Documentación API completa
+- `/docs/ARQUITECTURA.md` - Diseño arquitectónico
+- `/docs/MODELOS.md` - Descripción modelos
+- `/docs/JWT_AUTH.md` - Autenticación JWT
+- `/docs/BEST_PRACTICES.md` - Buenas prácticas
+
+## 📞 Contacto
+
+Para bugs o sugerencias, crear un issue en el repositorio.│   │   ├── wsgi.py                # WSGI application
 │   │   ├── asgi.py                # ASGI application
 │   │   ├── urls.py                # URLs raíz
 │   │   └── __init__.py
