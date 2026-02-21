@@ -17,11 +17,12 @@ export function Navbar() {
   }
 
   const navLinks = [
-    { href: '/dashboard', label: 'Dashboard' },
+    { href: '/dashboard', label: 'Panel' },
     { href: '/categories', label: 'Categorías' },
     { href: '/products', label: 'Productos' },
     { href: '/batches', label: 'Lotes' },
     { href: '/movements', label: 'Movimientos' },
+    { href: '/stock', label: 'Stock' },
   ]
 
   return (
@@ -65,7 +66,7 @@ export function Navbar() {
                 onClick={handleLogout}
                 className="hover:opacity-80 transition text-sm"
               >
-                Logout
+                Cerrar Sesión
               </button>
             </li>
           </ul>
@@ -90,7 +91,7 @@ export function Navbar() {
                   onClick={handleLogout}
                   className="block hover:opacity-80 transition"
                 >
-                  Logout
+                  Cerrar Sesión
                 </button>
               </li>
             </ul>
