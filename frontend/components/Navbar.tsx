@@ -37,6 +37,11 @@ export function Navbar() {
               </Link>
             </li>
             <li>
+              <Link href="/batches" className="hover:opacity-80 transition">
+                Lotes
+              </Link>
+            </li>
+            <li>
               <Link href="/movements" className="hover:opacity-80 transition">
                 Movimientos
               </Link>

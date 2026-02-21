@@ -4,6 +4,9 @@ Category API Views with multi-tenant security.
 
 from rest_framework.response import Response
 from rest_framework import status
+import logging
+
+logger = logging.getLogger(__name__)
 
 from inventario.models.category import Category
 from inventario.serializers.category_serializer import CategorySerializer
@@ -113,7 +116,7 @@ class CategoryAPIView(BaseCompanyAPIView):
             )
         except Exception as e:
             import traceback
-            print(f"Error inesperado en POST /categories/: {str(e)}")
+            logger.error(f"Error inesperado en POST /categories/: {str(e)}")
             traceback.print_exc()
             return Response(
                 {"error": f"Error interno del servidor: {str(e)}"},

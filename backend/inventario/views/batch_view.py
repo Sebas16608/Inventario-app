@@ -12,14 +12,14 @@ from inventario.views.base_views import BaseCompanyAPIView
 from inventario.services.stock_service import StockService
 
 
-class BatchSerializer:
+class BatchResponseSerializer:
     """Simple serializer for Batch responses."""
     
     @staticmethod
     def serialize(batch):
         return {
             "id": batch.id,
-            "product_id": batch.product.id,
+            "product": batch.product.id,
             "quantity_received": batch.quantity_received,
             "quantity_available": batch.quantity_available,
             "purchase_price": str(batch.purchase_price),
@@ -72,7 +72,7 @@ class BatchAPIView(BaseCompanyAPIView):
                 # Retrieve specific batch
                 batch = base_queryset.get(pk=pk)
                 return Response(
-                    BatchSerializer.serialize(batch),
+                    BatchResponseSerializer.serialize(batch),
                     status=status.HTTP_200_OK
                 )
 
@@ -86,7 +86,7 @@ class BatchAPIView(BaseCompanyAPIView):
             if not queryset.exists():
                 return Response([], status=status.HTTP_200_OK)
 
-            data = [BatchSerializer.serialize(batch) for batch in queryset]
+            data = [BatchResponseSerializer.serialize(batch) for batch in queryset]
             return Response(data, status=status.HTTP_200_OK)
 
         except Exception as exc:
@@ -151,9 +151,8 @@ class BatchAPIView(BaseCompanyAPIView):
                 supplier=serializer.validated_data['supplier']
             )
             
-            response_serializer = BatchSerializer(batch)
             return Response(
-                response_serializer.data,
+                BatchResponseSerializer.serialize(batch),
                 status=status.HTTP_201_CREATED
             )
 
@@ -161,6 +160,82 @@ class BatchAPIView(BaseCompanyAPIView):
             return Response(
                 {"detail": str(exc)},
                 status=status.HTTP_400_BAD_REQUEST
+            )
+        except Exception as exc:
+            return self.handle_exception(exc)
+
+    def put(self, request, pk):
+        """
+        Update an existing batch for a product in user's company.
+        
+        Args:
+            pk: Batch ID
+            
+        Required Fields:
+            - product: int (product ID)
+            - quantity_received: int
+            - purchase_price: decimal
+            - supplier: str
+            
+        Optional Fields:
+            - quantity_available: int
+            - expiration_date: date
+            
+        Returns:
+            Response: Updated batch data
+        """
+        try:
+            company = self.get_company()
+            
+            batch = Batch.objects.filter(product__company=company).get(pk=pk)
+            
+            serializer = BatchCreateSerializer(data=request.data)
+            if not serializer.is_valid():
+                return Response(
+                    serializer.errors,
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            product_id = serializer.validated_data.get('product')
+            if not product_id:
+                return Response(
+                    {"detail": "product is required"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            try:
+                product = Product.objects.get(
+                    id=product_id,
+                    company=company
+                )
+            except Product.DoesNotExist:
+                return Response(
+                    {
+                        "detail": "Product not found or doesn't belong to your company"
+                    },
+                    status=status.HTTP_404_NOT_FOUND
+                )
+            
+            batch.product = product
+            batch.quantity_received = serializer.validated_data.get('quantity_received')
+            batch.quantity_available = serializer.validated_data.get('quantity_available', batch.quantity_received)
+            batch.purchase_price = serializer.validated_data.get('purchase_price')
+            batch.supplier = serializer.validated_data.get('supplier')
+            
+            if 'expiration_date' in serializer.validated_data:
+                batch.expiration_date = serializer.validated_data.get('expiration_date')
+            
+            batch.save()
+            
+            return Response(
+                BatchResponseSerializer.serialize(batch),
+                status=status.HTTP_200_OK
+            )
+
+        except Batch.DoesNotExist:
+            return Response(
+                {"detail": "Batch not found"},
+                status=status.HTTP_404_NOT_FOUND
             )
         except Exception as exc:
             return self.handle_exception(exc)

@@ -4,6 +4,9 @@ Product API Views with multi-tenant security.
 
 from rest_framework.response import Response
 from rest_framework import status
+import logging
+
+logger = logging.getLogger(__name__)
 
 from inventario.models.product import Product
 from inventario.models.category import Category
@@ -138,7 +141,7 @@ class ProductAPIView(BaseCompanyAPIView):
             )
         except Exception as e:
             import traceback
-            print(f"Error inesperado en POST /products/: {str(e)}")
+            logger.error(f"Error inesperado en POST /products/: {str(e)}")
             traceback.print_exc()
             return Response(
                 {"error": f"Error interno del servidor: {str(e)}"},

@@ -233,12 +233,13 @@ export default function BatchesPage() {
                 </tr>
               </thead>
               <tbody>
-                {batches.map((batch) => (
+                {batches.map((batch) => {
+                  const productId = typeof batch.product === 'number' ? batch.product : batch.product.id
+                  const productName = products?.find(p => p.id === productId)?.name || 'Producto no encontrado'
+                  return (
                   <tr key={batch.id} className="border-b hover:bg-gray-50">
                     <td className="px-4 py-3">
-                      {typeof batch.product === 'number'
-                        ? 'Producto'
-                        : batch.product.name}
+                      {productName}
                     </td>
                     <td className="px-4 py-3 text-center">{batch.quantity_received}</td>
                     <td className="px-4 py-3 text-center">{batch.quantity_available}</td>
@@ -274,9 +275,10 @@ export default function BatchesPage() {
                       >
                         Eliminar
                       </Button>
-                    </td>
-                  </tr>
-                ))}
+                      </td>
+                    </tr>
+                  )
+                })}
               </tbody>
             </table>
           </div>
