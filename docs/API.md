@@ -150,6 +150,14 @@ print(data)
 
 ### Manejo de Errores de Autenticación
 
+**401 Unauthorized - Sin Credenciales:**
+```json
+{
+  "detail": "Authentication credentials were not provided."
+}
+```
+Esto ocurre cuando se accede a un endpoint protegido sin incluir el header `Authorization`.
+
 **401 Unauthorized - Token Expirado:**
 ```json
 {
