@@ -1,11 +1,14 @@
 'use client'
 
-import React from 'react'
+import React, { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
+import logoNavbar from '../media/logo_navbar.png'
 
 export function Navbar() {
   const router = useRouter()
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
 
   const handleLogout = () => {
     localStorage.removeItem('access_token')
@@ -13,49 +16,86 @@ export function Navbar() {
     router.push('/login')
   }
 
+  const navLinks = [
+    { href: '/dashboard', label: 'Dashboard' },
+    { href: '/categories', label: 'Categorías' },
+    { href: '/products', label: 'Productos' },
+    { href: '/batches', label: 'Lotes' },
+    { href: '/movements', label: 'Movimientos' },
+  ]
+
   return (
     <nav className="bg-primary-600 text-white shadow-md">
-      <div className="max-w-7xl mx-auto px-4 py-4">
-        <div className="flex justify-between items-center">
-          <Link href="/dashboard" className="text-2xl font-bold">
-            Invorax
+      <div className="max-w-7xl mx-auto px-4">
+        <div className="flex justify-between items-center h-16">
+          <Link href="/dashboard" className="flex items-center">
+            <Image 
+              src={logoNavbar} 
+              alt="Invorax" 
+              width={120} 
+              height={40}
+              className="object-contain"
+            />
           </Link>
-          <ul className="flex gap-6">
-            <li>
-              <Link href="/dashboard" className="hover:opacity-80 transition">
-                Dashboard
-              </Link>
-            </li>
-            <li>
-              <Link href="/categories" className="hover:opacity-80 transition">
-                Categorías
-              </Link>
-            </li>
-            <li>
-              <Link href="/products" className="hover:opacity-80 transition">
-                Productos
-              </Link>
-            </li>
-            <li>
-              <Link href="/batches" className="hover:opacity-80 transition">
-                Lotes
-              </Link>
-            </li>
-            <li>
-              <Link href="/movements" className="hover:opacity-80 transition">
-                Movimientos
-              </Link>
-            </li>
+
+          <button
+            className="md:hidden p-2"
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            aria-label="Menú"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              {isMenuOpen ? (
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              ) : (
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              )}
+            </svg>
+          </button>
+
+          <ul className="hidden md:flex gap-6">
+            {navLinks.map((link) => (
+              <li key={link.href}>
+                <Link href={link.href} className="hover:opacity-80 transition text-sm">
+                  {link.label}
+                </Link>
+              </li>
+            ))}
             <li>
               <button
                 onClick={handleLogout}
-                className="hover:opacity-80 transition"
+                className="hover:opacity-80 transition text-sm"
               >
                 Logout
               </button>
             </li>
           </ul>
         </div>
+
+        {isMenuOpen && (
+          <div className="md:hidden pb-4">
+            <ul className="flex flex-col gap-4">
+              {navLinks.map((link) => (
+                <li key={link.href}>
+                  <Link 
+                    href={link.href} 
+                    className="block hover:opacity-80 transition"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+              <li>
+                <button
+                  onClick={handleLogout}
+                  className="block hover:opacity-80 transition"
+                >
+                  Logout
+                </button>
+              </li>
+            </ul>
+          </div>
+        )}
       </div>
     </nav>
   )
