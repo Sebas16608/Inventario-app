@@ -70,6 +70,7 @@ export interface ProductCreate {
 // Batch Types
 export interface Batch {
   id: number
+  code: string
   product: number | Product
   quantity_received: number
   quantity_available: number
@@ -80,11 +81,12 @@ export interface Batch {
 }
 
 export interface BatchCreate {
+  code: string
   product: number
   quantity_received: number
-  quantity_available: number
+  quantity_available?: number
   purchase_price: string
-  expiration_date: string
+  expiration_date?: string | null
   supplier: string
 }
 
@@ -93,19 +95,21 @@ export interface Movement {
   id: number
   product: number | Product
   batch: number | Batch
+  batch_code?: string
   quantity: number
-  movement_type: 'IN' | 'OUT'
+  movement_type: 'IN' | 'OUT' | 'ADJUST' | 'EXPIRED'
   reason: string
   created_at: string
   created_by: number | User
 }
 
 export interface MovementCreate {
-  product: number
-  batch: number
+  product?: number
+  batch_code?: string
+  batch?: number
   quantity: number
-  movement_type: 'IN' | 'OUT'
-  reason: string
+  movement_type: 'IN' | 'OUT' | 'ADJUST' | 'EXPIRED'
+  reason?: string
 }
 
 // API Response Types

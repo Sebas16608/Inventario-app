@@ -28,8 +28,9 @@ class BatchSerializer(serializers.ModelSerializer):
 class BatchCreateSerializer(serializers.Serializer):
     """Serializer for creating batches with POST requests."""
     product = serializers.IntegerField()
+    code = serializers.CharField(max_length=50, required=True)
     quantity_received = serializers.IntegerField(min_value=1)
     quantity_available = serializers.IntegerField(required=False)
     purchase_price = serializers.DecimalField(max_digits=10, decimal_places=2)
-    expiration_date = serializers.DateField(required=True)
+    expiration_date = serializers.DateField(required=False)
     supplier = serializers.CharField(max_length=255)

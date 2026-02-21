@@ -149,7 +149,8 @@ class BatchAPIView(BaseCompanyAPIView):
                 quantity=serializer.validated_data['quantity_received'],
                 purchase_price=serializer.validated_data['purchase_price'],
                 expiration_date=serializer.validated_data.get('expiration_date'),
-                supplier=serializer.validated_data['supplier']
+                supplier=serializer.validated_data['supplier'],
+                code=serializer.validated_data.get('code')
             )
             
             return Response(

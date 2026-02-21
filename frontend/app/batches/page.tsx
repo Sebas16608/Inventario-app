@@ -19,6 +19,7 @@ export default function BatchesPage() {
   const [showForm, setShowForm] = useState(false)
   const [editingId, setEditingId] = useState<number | null>(null)
   const [formData, setFormData] = useState({
+    code: '',
     product: '',
     quantity_received: '',
     quantity_available: '',
@@ -40,6 +41,7 @@ export default function BatchesPage() {
 
   const handleOpenForm = () => {
     setFormData({
+      code: '',
       product: '',
       quantity_received: '',
       quantity_available: '',
@@ -60,20 +62,21 @@ export default function BatchesPage() {
     e.preventDefault()
     setSubmitError('')
 
-    if (!formData.product || !formData.quantity_received || !formData.purchase_price || !formData.expiration_date) {
-      setSubmitError('Producto, cantidad, precio y fecha de vencimiento son requeridos')
+    if (!formData.product || !formData.quantity_received || !formData.purchase_price || !formData.supplier || !formData.code) {
+      setSubmitError('Producto, cantidad, precio, proveedor y código son requeridos')
       return
     }
 
     try {
       const batchData = {
         product: parseInt(formData.product),
+        code: formData.code,
         quantity_received: parseInt(formData.quantity_received),
         quantity_available: formData.quantity_available 
           ? parseInt(formData.quantity_available) 
           : parseInt(formData.quantity_received),
         purchase_price: formData.purchase_price,
-        expiration_date: formData.expiration_date,
+        expiration_date: formData.expiration_date || null,
         supplier: formData.supplier,
       }
 
@@ -127,6 +130,16 @@ export default function BatchesPage() {
               <Alert type="error" message={submitError} onClose={() => setSubmitError('')} />
             )}
             <form className="space-y-4" onSubmit={handleSubmit}>
+              <Input
+                label="Código de Lote"
+                name="code"
+                value={formData.code}
+                onChange={handleInputChange}
+                placeholder="LOTE-001"
+                required
+                disabled={createMutation.isPending || updateMutation.isPending}
+              />
+
               <Select
                 label="Producto"
                 name="product"
@@ -178,7 +191,6 @@ export default function BatchesPage() {
                 name="expiration_date"
                 value={formData.expiration_date}
                 onChange={handleInputChange}
-                required
                 disabled={createMutation.isPending || updateMutation.isPending}
               />
 
@@ -188,6 +200,7 @@ export default function BatchesPage() {
                 value={formData.supplier}
                 onChange={handleInputChange}
                 placeholder="Nombre del proveedor"
+                required
                 disabled={createMutation.isPending || updateMutation.isPending}
               />
 
@@ -223,6 +236,7 @@ export default function BatchesPage() {
             <table className="w-full">
               <thead className="bg-gray-100 border-b">
                 <tr>
+                  <th className="px-4 py-2 text-left font-medium">Código</th>
                   <th className="px-4 py-2 text-left font-medium">Producto</th>
                   <th className="px-4 py-2 text-center font-medium">Recibida</th>
                   <th className="px-4 py-2 text-center font-medium">Disponible</th>
@@ -238,12 +252,13 @@ export default function BatchesPage() {
                   const productName = products?.find(p => p.id === productId)?.name || 'Producto no encontrado'
                   return (
                   <tr key={batch.id} className="border-b hover:bg-gray-50">
+                    <td className="px-4 py-3 font-mono text-sm">{batch.code}</td>
                     <td className="px-4 py-3">
                       {productName}
                     </td>
                     <td className="px-4 py-3 text-center">{batch.quantity_received}</td>
                     <td className="px-4 py-3 text-center">{batch.quantity_available}</td>
-                    <td className="px-4 py-3 text-right">${batch.purchase_price}</td>
+                    <td className="px-4 py-3 text-right">Q{batch.purchase_price}</td>
                     <td className="px-4 py-3">
                       {new Date(batch.expiration_date).toLocaleDateString('es-ES')}
                     </td>
@@ -254,11 +269,12 @@ export default function BatchesPage() {
                         variant="secondary"
                         onClick={() => {
                           setFormData({
+                            code: batch.code || '',
                             product: String(typeof batch.product === 'number' ? batch.product : batch.product.id),
                             quantity_received: String(batch.quantity_received),
                             quantity_available: String(batch.quantity_available),
                             purchase_price: batch.purchase_price,
-                            expiration_date: batch.expiration_date,
+                            expiration_date: batch.expiration_date || '',
                             supplier: batch.supplier,
                           })
                           setEditingId(batch.id)

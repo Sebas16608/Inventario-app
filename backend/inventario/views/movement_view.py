@@ -117,18 +117,39 @@ class MovementAPIView(BaseCompanyAPIView):
                 )
             
             # Get batch and validate it belongs to user's company
+            batch_code = serializer.validated_data.get('batch_code')
             batch_id = serializer.validated_data.get('batch')
-            try:
-                batch = Batch.objects.get(
-                    id=batch_id,
-                    product__company=company
-                )
-            except Batch.DoesNotExist:
+            
+            if batch_code:
+                try:
+                    batch = Batch.objects.get(
+                        code=batch_code,
+                        product__company=company
+                    )
+                except Batch.DoesNotExist:
+                    return Response(
+                        {
+                            "detail": "Lote no encontrado o no pertenece a tu empresa"
+                        },
+                        status=status.HTTP_404_NOT_FOUND
+                    )
+            elif batch_id:
+                try:
+                    batch = Batch.objects.get(
+                        id=batch_id,
+                        product__company=company
+                    )
+                except Batch.DoesNotExist:
+                    return Response(
+                        {
+                            "detail": "Lote no encontrado o no pertenece a tu empresa"
+                        },
+                        status=status.HTTP_404_NOT_FOUND
+                    )
+            else:
                 return Response(
-                    {
-                        "detail": "Batch not found or doesn't belong to your company"
-                    },
-                    status=status.HTTP_404_NOT_FOUND
+                    {"detail": "Se requiere batch_code o batch"},
+                    status=status.HTTP_400_BAD_REQUEST
                 )
             
             movement_type = serializer.validated_data.get('movement_type')

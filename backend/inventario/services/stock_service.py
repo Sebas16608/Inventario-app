@@ -25,9 +25,11 @@ class StockService:
         quantity,
         purchase_price,
         expiration_date,
-        supplier
+        supplier,
+        code=None
     ):
-        code = StockService._generate_batch_code(product.company_id)
+        if not code:
+            code = StockService._generate_batch_code(product.company_id)
         
         batch = Batch.objects.create(
             product=product,

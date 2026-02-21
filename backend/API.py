@@ -1,7 +1,14 @@
+"""
+DEPRECATED: This base class should NOT be used for multi-tenant endpoints.
+Use BaseCompanyAPIView from inventario.views.base_views instead.
+
+This class has NO company isolation - all queries are global.
+"""
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import AllowAny
+import warnings
 
 
 def notexist():
@@ -9,10 +16,23 @@ def notexist():
 
 
 class SuperApiView(APIView):
+    """
+    DEPRECATED: Do not use for multi-tenant endpoints.
+    Use BaseCompanyAPIView from inventario.views.base_views instead.
+    """
     model = None
     serializer_class = None
     filter_fields = []
     permission_classes = (AllowAny,)  # Override in subclasses as needed
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        warnings.warn(
+            "SuperApiView is deprecated and should NOT be used for multi-tenant endpoints. "
+            "Use BaseCompanyAPIView from inventario.views.base_views instead.",
+            DeprecationWarning,
+            stacklevel=2
+        )
 
     def get(self, request, pk=None):
         # GET por ID (path param)

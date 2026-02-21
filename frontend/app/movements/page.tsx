@@ -27,8 +27,8 @@ export default function MovementsPage() {
   const [submitError, setSubmitError] = useState('')
 
   const batchOptions = (batches || []).map((batch) => ({
-    value: String(batch.id),
-    label: `Lote ${batch.id} - ${typeof batch.product === 'number' ? 'Producto' : batch.product.name}`,
+    value: batch.code || String(batch.id),
+    label: `Lote ${batch.code || batch.id} - ${typeof batch.product === 'number' ? 'Producto' : batch.product.name}`,
   }))
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -62,17 +62,16 @@ export default function MovementsPage() {
     }
 
     try {
-      const selectedBatch = batches?.find(b => b.id === parseInt(formData.batch))
+      const selectedBatch = batches?.find(b => (b.code || String(b.id)) === formData.batch)
       if (!selectedBatch) {
         setSubmitError('Lote no encontrado')
         return
       }
 
       const movementData = {
-        batch: parseInt(formData.batch),
-        product: typeof selectedBatch.product === 'number' ? selectedBatch.product : selectedBatch.product.id,
+        batch_code: selectedBatch.code || undefined,
         quantity: parseInt(formData.quantity),
-        movement_type: formData.movement_type as 'IN' | 'OUT',
+        movement_type: formData.movement_type as 'IN' | 'OUT' | 'ADJUST' | 'EXPIRED',
         reason: formData.reason,
       }
 
@@ -144,6 +143,8 @@ export default function MovementsPage() {
                 options={[
                   { value: 'IN', label: 'Entrada (IN)' },
                   { value: 'OUT', label: 'Salida (OUT)' },
+                  { value: 'ADJUST', label: 'Ajuste (ADJUST)' },
+                  { value: 'EXPIRED', label: 'Vencido (EXPIRED)' },
                 ]}
                 required
                 disabled={createMutation.isPending || updateMutation.isPending}
@@ -218,7 +219,9 @@ export default function MovementsPage() {
                       {typeof movement.product === 'number' ? 'Producto' : movement.product.name}
                     </td>
                     <td className="px-4 py-3 text-center">
-                      {typeof movement.batch === 'number' ? movement.batch : movement.batch.id}
+                      {typeof movement.batch === 'number' 
+                        ? movement.batch 
+                        : (movement as any).batch_code || movement.batch.id}
                     </td>
                     <td className="px-4 py-3 text-center">{movement.quantity}</td>
                     <td className="px-4 py-3">
@@ -241,8 +244,10 @@ export default function MovementsPage() {
                         size="sm" 
                         variant="secondary"
                         onClick={() => {
+                          const batchCode = (movement as any).batch_code 
+                            || (typeof movement.batch === 'number' ? String(movement.batch) : movement.batch.id)
                           setFormData({
-                            batch: String(typeof movement.batch === 'number' ? movement.batch : movement.batch.id),
+                            batch: batchCode,
                             quantity: String(movement.quantity),
                             movement_type: movement.movement_type,
                             reason: movement.reason,
