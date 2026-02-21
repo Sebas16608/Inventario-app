@@ -255,12 +255,12 @@ LOGGING = {
     'loggers': {
         'django': {
             'handlers': ['console', 'file'],
-            'level': 'DEBUG',
+            'level': 'WARNING',
             'propagate': False,
         },
         'inventario': {
             'handlers': ['console', 'file'],
-            'level': 'DEBUG',
+            'level': 'WARNING',
             'propagate': False,
         },
     },
