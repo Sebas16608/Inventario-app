@@ -25,7 +25,7 @@ export function Navbar() {
   ]
 
   return (
-    <nav className="bg-primary-500 text-white shadow-md">
+    <nav className="bg-orange-500 text-white shadow-md" style={{ backgroundColor: '#FF6B35' }}>
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex justify-between items-center h-16">
           <Link href="/dashboard" className="flex items-center">
