@@ -1,6 +1,8 @@
-# 📦 Inventario-app
+# INVORAX
 
-> **Sistema de Gestión de Inventario Multi-Empresa basado en Django REST Framework**
+> **Sistema de Gestión de Inventario Multi-Empresa**
+> 
+> Minimalista. Rápido. Confiable. Diseñado para el control.
 > 
 > ✅ Backend listo para producción • 🚀 Deployment en Render • 🐳 Docker containerizado
 
@@ -8,7 +10,7 @@
 
 ## 📋 Descripción del Proyecto
 
-Inventario App es una plataforma SaaS para la gestión integral de inventarios que permite a múltiples empresas administrar sus productos, categorías, lotes y movimientos de stock. Está construida con **Django 5.1** y **Django REST Framework**, proporcionando una API RESTful completa, segura y escalable.
+INVORAX es una plataforma SaaS para la gestión integral de inventarios que permite a múltiples empresas administrar sus productos, categorías, lotes y movimientos de stock. Está construida con **Django 5.1** y **Django REST Framework** en el backend, y **Next.js 14** con TypeScript en el frontend.
 
 ### ✨ Características Principales
 
@@ -95,7 +97,7 @@ python manage.py runserver
 ## 📊 Estructura del Proyecto
 
 ```
-Inventario-app/
+INVORAX/
 │
 ├── 🔙 backend/                    # Django application (PRODUCTION READY)
 │   ├── core/                      # Settings, WSGI, URLs
@@ -106,7 +108,7 @@ Inventario-app/
 │   ├── README.md                  # Guía del backend ⭐
 │   └── entrypoint.sh
 │
-├── 🎨 frontend/                   # Next.js 14 + React (✅ READY!)
+├── 🎨 frontend/                   # Next.js 14 + TypeScript (✅ READY!)
 │   ├── app/                       # Páginas
 │   ├── components/                # Componentes reutilizables
 │   ├── lib/                       # Cliente API y hooks
@@ -164,6 +166,12 @@ Ver [docs/API.md](docs/API.md) para documentación completa.
 - **Django REST Simple JWT** - Autenticación JWT
 - **Django CORS Headers** - CORS configurado
 - **psycopg2-binary** - Driver PostgreSQL
+
+### Frontend
+- **Next.js 14** - Framework React
+- **TypeScript** - Tipado estático
+- **TailwindCSS** - Estilos
+- **React Query** - Gestión de estado
 
 ### DevOps & Deployment
 - **Python 3.13.1** - Versión Python
@@ -246,14 +254,22 @@ python manage.py test
 python manage.py shell
 ```
 
-### Verificación
+### Frontend (Next.js)
 
 ```bash
-# Verificar estructura del proyecto
-./verify-setup.sh
+cd frontend
 
-# Build script
-./build.sh
+# Instalar dependencias
+npm install
+
+# Desarrollo
+npm run dev
+
+# Build producción
+npm run build
+
+# Lint
+npm run lint
 ```
 
 ---
@@ -340,9 +356,9 @@ Privado - Todos los derechos reservados.
 
 ```
 ✅ Backend production-ready
+✅ Frontend production-ready
 ✅ Docker configurado
 ✅ Render.com ready
-⏳ Frontend: Coming soon
 ```
 
-**Última actualización**: 17 de febrero de 2026
+**Última actualización**: 21 de febrero de 2026

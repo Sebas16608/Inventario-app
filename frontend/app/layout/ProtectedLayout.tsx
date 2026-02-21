@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Navbar } from '@/components/Navbar'
+import { Footer } from '@/components/Footer'
 
 export function ProtectedLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter()
@@ -33,6 +34,7 @@ export function ProtectedLayout({ children }: { children: React.ReactNode }) {
           {children}
         </main>
       </div>
+      <Footer />
     </div>
   )
 }
