@@ -1,6 +1,7 @@
 from django.db import models
 from inventario.models.product import Product
 
+
 class Batch(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="batches")
     quantity_received = models.IntegerField()
@@ -9,6 +10,7 @@ class Batch(models.Model):
     expiration_date = models.DateField()
     received_at = models.DateTimeField(auto_now_add=True)
     supplier = models.CharField(max_length=255)
+    code = models.CharField(max_length=50, unique=True, blank=True, null=True)
 
     class Meta:
         ordering = ["id"]

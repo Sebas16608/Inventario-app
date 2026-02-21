@@ -19,6 +19,7 @@ class BatchResponseSerializer:
     def serialize(batch):
         return {
             "id": batch.id,
+            "code": batch.code,
             "product": batch.product.id,
             "quantity_received": batch.quantity_received,
             "quantity_available": batch.quantity_available,

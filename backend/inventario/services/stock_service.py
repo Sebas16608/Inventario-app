@@ -6,6 +6,19 @@ from inventario.models.movement import Movement
 class StockService:
 
     @staticmethod
+    def _generate_batch_code(company_id):
+        last_batch = Batch.objects.filter(product__company_id=company_id).order_by('-id').first()
+        if last_batch and last_batch.code:
+            try:
+                last_num = int(last_batch.code.split('-')[-1])
+                new_num = last_num + 1
+            except (ValueError, IndexError):
+                new_num = 1
+        else:
+            new_num = 1
+        return f"LOTE-{company_id}-{new_num:04d}"
+
+    @staticmethod
     @transaction.atomic
     def registrar_entrada(
         product,
@@ -14,13 +27,16 @@ class StockService:
         expiration_date,
         supplier
     ):
+        code = StockService._generate_batch_code(product.company_id)
+        
         batch = Batch.objects.create(
             product=product,
             quantity_received=quantity,
             quantity_available=quantity,
             purchase_price=purchase_price,
             expiration_date=expiration_date,
-            supplier=supplier
+            supplier=supplier,
+            code=code
         )
 
         Movement.objects.create(

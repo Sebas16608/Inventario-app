@@ -10,6 +10,7 @@ class BatchSerializer(serializers.ModelSerializer):
         model = Batch
         fields = [
             "id",
+            "code",
             "product",
             "quantity_received",
             "quantity_available",
@@ -20,6 +21,7 @@ class BatchSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = [
             "id",
+            "code",
             "received_at",
         ]
 
