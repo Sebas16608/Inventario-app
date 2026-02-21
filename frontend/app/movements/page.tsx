@@ -216,12 +216,10 @@ export default function MovementsPage() {
                 {movements.map((movement: any) => (
                   <tr key={movement.id} className="border-b hover:bg-gray-50">
                     <td className="px-4 py-3">
-                      {typeof movement.product === 'number' ? 'Producto' : movement.product.name}
+                      {movement.product_name || (typeof movement.product === 'number' ? 'Producto' : movement.product.name)}
                     </td>
-                    <td className="px-4 py-3 text-center">
-                      {typeof movement.batch === 'number' 
-                        ? movement.batch 
-                        : (movement as any).batch_code || movement.batch.id}
+                    <td className="px-4 py-3 text-center font-mono text-sm">
+                      {movement.batch_code || (typeof movement.batch === 'number' ? movement.batch : movement.batch.id)}
                     </td>
                     <td className="px-4 py-3 text-center">{movement.quantity}</td>
                     <td className="px-4 py-3">

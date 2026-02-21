@@ -4,6 +4,7 @@ from inventario.models.movement import Movement
 class MovementSerializer(serializers.ModelSerializer):
     # Nested serializers for related objects
     product = serializers.SerializerMethodField()
+    product_name = serializers.SerializerMethodField()
     batch_id = serializers.IntegerField(source='batch.id', read_only=True)
     batch_code = serializers.CharField(source='batch.code', read_only=True)
     reason = serializers.CharField(source='note', allow_blank=True)
@@ -16,6 +17,7 @@ class MovementSerializer(serializers.ModelSerializer):
             "batch_id",
             "batch_code",
             "product",
+            "product_name",
             "movement_type",
             "quantity",
             "reason",
@@ -25,6 +27,10 @@ class MovementSerializer(serializers.ModelSerializer):
     def get_product(self, obj):
         """Return product ID from the batch."""
         return obj.batch.product.id
+
+    def get_product_name(self, obj):
+        """Return product name from the batch."""
+        return obj.batch.product.name
 
 class MovementCreateSerializer(serializers.Serializer):
     """Serializer for creating movements with POST requests."""

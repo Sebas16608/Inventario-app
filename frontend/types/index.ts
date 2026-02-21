@@ -93,6 +93,7 @@ export interface BatchCreate {
 export interface Movement {
   id: number
   product: number | Product
+  product_name?: string
   batch: number | Batch
   batch_code?: string
   quantity: number
