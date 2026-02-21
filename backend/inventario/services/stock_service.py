@@ -1,4 +1,5 @@
 from django.db import transaction
+import re
 from inventario.models.batch import Batch
 from inventario.models.movement import Movement
 
@@ -9,14 +10,14 @@ class StockService:
     def _generate_batch_code(company_id):
         last_batch = Batch.objects.filter(product__company_id=company_id).order_by('-id').first()
         if last_batch and last_batch.code:
-            try:
-                last_num = int(last_batch.code.split('-')[-1])
-                new_num = last_num + 1
-            except (ValueError, IndexError):
+            match = re.search(r'BAT-(\d+)', last_batch.code)
+            if match:
+                new_num = int(match.group(1)) + 1
+            else:
                 new_num = 1
         else:
             new_num = 1
-        return f"LOTE-{company_id}-{new_num:04d}"
+        return f"BAT-{new_num:04d}"
 
     @staticmethod
     @transaction.atomic

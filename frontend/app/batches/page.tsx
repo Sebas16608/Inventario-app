@@ -19,7 +19,6 @@ export default function BatchesPage() {
   const [showForm, setShowForm] = useState(false)
   const [editingId, setEditingId] = useState<number | null>(null)
   const [formData, setFormData] = useState({
-    code: '',
     product: '',
     quantity_received: '',
     quantity_available: '',
@@ -41,7 +40,6 @@ export default function BatchesPage() {
 
   const handleOpenForm = () => {
     setFormData({
-      code: '',
       product: '',
       quantity_received: '',
       quantity_available: '',
@@ -62,15 +60,14 @@ export default function BatchesPage() {
     e.preventDefault()
     setSubmitError('')
 
-    if (!formData.product || !formData.quantity_received || !formData.purchase_price || !formData.supplier || !formData.code) {
-      setSubmitError('Producto, cantidad, precio, proveedor y código son requeridos')
+    if (!formData.product || !formData.quantity_received || !formData.purchase_price || !formData.supplier) {
+      setSubmitError('Producto, cantidad, precio y proveedor son requeridos')
       return
     }
 
     try {
       const batchData = {
         product: parseInt(formData.product),
-        code: formData.code,
         quantity_received: parseInt(formData.quantity_received),
         quantity_available: formData.quantity_available 
           ? parseInt(formData.quantity_available) 
@@ -130,16 +127,6 @@ export default function BatchesPage() {
               <Alert type="error" message={submitError} onClose={() => setSubmitError('')} />
             )}
             <form className="space-y-4" onSubmit={handleSubmit}>
-              <Input
-                label="Código de Lote"
-                name="code"
-                value={formData.code}
-                onChange={handleInputChange}
-                placeholder="LOTE-001"
-                required
-                disabled={createMutation.isPending || updateMutation.isPending}
-              />
-
               <Select
                 label="Producto"
                 name="product"
@@ -269,7 +256,6 @@ export default function BatchesPage() {
                         variant="secondary"
                         onClick={() => {
                           setFormData({
-                            code: batch.code || '',
                             product: String(typeof batch.product === 'number' ? batch.product : batch.product.id),
                             quantity_received: String(batch.quantity_received),
                             quantity_available: String(batch.quantity_available),

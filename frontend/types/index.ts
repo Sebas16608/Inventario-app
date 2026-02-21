@@ -81,7 +81,6 @@ export interface Batch {
 }
 
 export interface BatchCreate {
-  code: string
   product: number
   quantity_received: number
   quantity_available?: number
