@@ -239,9 +239,15 @@ CORS_ALLOWED_ORIGINS = os.getenv("CORS_ALLOWED_ORIGINS", "").split(",") if os.ge
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
+    'formatters': {
+        'simple': {
+            'format': '{method} {path} {status} {duration}',
+        },
+    },
     'handlers': {
         'console': {
             'class': 'logging.StreamHandler',
+            'formatter': 'simple',
         },
         'file': {
             'class': 'logging.FileHandler',
@@ -250,17 +256,17 @@ LOGGING = {
     },
     'root': {
         'handlers': ['console', 'file'],
-        'level': 'INFO',
+        'level': 'WARNING',
     },
     'loggers': {
-        'django': {
-            'handlers': ['console', 'file'],
-            'level': 'WARNING',
+        'django.server': {
+            'handlers': ['console'],
+            'level': 'INFO',
             'propagate': False,
         },
-        'inventario': {
-            'handlers': ['console', 'file'],
-            'level': 'WARNING',
+        'django.request': {
+            'handlers': ['console'],
+            'level': 'INFO',
             'propagate': False,
         },
     },
