@@ -241,7 +241,7 @@ LOGGING = {
     'disable_existing_loggers': False,
     'formatters': {
         'simple': {
-            'format': '{method} {path} {status} {duration}',
+            'format': '%(message)s',
         },
     },
     'handlers': {

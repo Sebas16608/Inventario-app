@@ -90,7 +90,19 @@ class BaseCompanyAPIView(APIView):
         Returns:
             Response: DRF Response with appropriate status code
         """
-        if isinstance(exc, PermissionError):
+        from rest_framework.exceptions import NotAuthenticated, PermissionDenied as DRFPermissionDenied
+        
+        if isinstance(exc, DRFPermissionDenied):
+            return Response(
+                {"detail": str(exc)},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        elif isinstance(exc, NotAuthenticated):
+            return Response(
+                {"detail": str(exc)},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+        elif isinstance(exc, PermissionError):
             return Response(
                 {"detail": str(exc)},
                 status=status.HTTP_403_FORBIDDEN
@@ -107,6 +119,6 @@ class BaseCompanyAPIView(APIView):
             )
         
         return Response(
-            {"detail": "An error occurred"},
+            {"detail": "An error occurred", "type": str(type(exc)), "message": str(exc)},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
