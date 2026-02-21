@@ -67,6 +67,11 @@ node_modules/
 npm-debug.log
 yarn-error.log
 
+# Next.js
+*.tsbuildinfo
+next-env.d.ts
+.next/
+
 # OS
 .DS_Store
 .DS_Store?
