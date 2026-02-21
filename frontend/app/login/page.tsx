@@ -53,7 +53,7 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary-50 to-primary-100 flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
-        <h1 className="text-3xl font-bold text-center mb-8">Inventario App</h1>
+        <h1 className="text-3xl font-bold text-center mb-8">Invorax</h1>
 
         {error && (
           <Alert

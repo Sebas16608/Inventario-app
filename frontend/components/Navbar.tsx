@@ -18,7 +18,7 @@ export function Navbar() {
       <div className="max-w-7xl mx-auto px-4 py-4">
         <div className="flex justify-between items-center">
           <Link href="/dashboard" className="text-2xl font-bold">
-            Inventario App
+            Invorax
           </Link>
           <ul className="flex gap-6">
             <li>
